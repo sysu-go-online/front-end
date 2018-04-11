@@ -19,6 +19,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     },
     open: true,
     openPage: 'online-code/online-code.html'
+    // openPage: 'home/home.html'
   }
 })
 
