@@ -1,92 +1,178 @@
 'use strict'
-const path = require('path')
-const utils = require('./utils')
-const config = require('../config')
-const vueLoaderConfig = require('./vue-loader.conf')
 
-function resolve (dir) {
-  return path.join(__dirname, '..', dir)
-}
+const { join, resolve } = require('path')
+const webpack = require('webpack')
+const glob = require('glob')
 
-const createLintingRule = () => ({
-  test: /\.(js|vue)$/,
-  loader: 'eslint-loader',
-  enforce: 'pre',
-  include: [resolve('src'), resolve('test')],
-  options: {
-    formatter: require('eslint-friendly-formatter'),
-    emitWarning: !config.dev.showEslintErrorsInOverlay
-  }
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+//plugins
+const extractCSS = new ExtractTextPlugin({
+  filename: 'assets/css/[name].css',
+  allChunks: true
+})
+const extractLESS = new ExtractTextPlugin({
+  filename: 'assets/css/[name].css',
+  allChunks: true
+})
+const extractSASS = new ExtractTextPlugin({
+  filename: 'assets/css/[name].css',
+  allChunks: true
 })
 
-module.exports = {
-  context: path.resolve(__dirname, '../'),
-  entry: {
-    app: './src/main.js'
-  },
+const entries = {}
+const chunks = []
+const htmlWebpackPluginArray = []
+//Can use to write a glob rule, and match some files which meet the rule
+glob.sync('./src/pages/**/app.js').forEach(path => {
+  const chunk = path.split('./src/pages/')[1].split('/app.js')[0]
+  entries[chunk] = path
+  chunks.push(chunk)
+
+  const filename = chunk + '/' + chunk + '.html'
+  const htmlConf = {
+    filename: filename,
+    template: path.replace(/.js/g, '.html'),
+    inject: 'body',
+    favicon: './src/assets/img/logo.png',
+    hash: true,
+    chunks: ['commons', chunk]
+  }
+  htmlWebpackPluginArray.push(new HtmlWebpackPlugin(htmlConf))
+})
+
+//loader,加载器
+const styleLoaderOptions = {
+  loader: 'style-loader',
+  options: {
+    sourceMap: true
+  }
+}
+const cssOptions = [
+  { loader: 'css-loader', options: { sourceMap: true } },
+  { loader: 'postcss-loader', options: { sourceMap: true } }
+]
+const lessOptions = [...cssOptions, {
+  loader: 'less-loader',
+  options: {
+    sourceMap: true
+  }
+}]
+const sassOptions = [...cssOptions, {
+  loader: 'sass-loader',
+  options: {
+    sourceMap: true
+  }
+}]
+
+//configuration
+const config = {
+  entry: entries,
   output: {
-    path: config.build.assetsRoot,
-    filename: '[name].js',
-    publicPath: process.env.NODE_ENV === 'production'
-      ? config.build.assetsPublicPath
-      : config.dev.assetsPublicPath
+    path: resolve(__dirname, '../dist'),
+    filename: 'assets/js/[name].js',
+    publicPath: '/'
   },
   resolve: {
-    extensions: ['.js', '.vue', '.json'],
+    extensions: ['.js', '.vue'],
     alias: {
-      'vue$': 'vue/dist/vue.esm.js',
-      '@': resolve('src'),
+      assets: join(__dirname, '../src/assets'),
+      components: join(__dirname, '../src/components')
     }
   },
   module: {
     rules: [
-      ...(config.dev.useEslint ? [createLintingRule()] : []),
       {
         test: /\.vue$/,
         loader: 'vue-loader',
-        options: vueLoaderConfig
+        options: {
+          loaders: {
+            css: ['css-hot-loader'].concat(ExtractTextPlugin.extract({
+              use: cssOptions,
+              fallback: styleLoaderOptions
+            })),
+            less: ['css-hot-loader'].concat(ExtractTextPlugin.extract({
+              use: lessOptions,
+              fallback: styleLoaderOptions
+            })),
+            scss: ['css-hot-loader'].concat(ExtractTextPlugin.extract({
+              use: sassOptions,
+              fallback: styleLoaderOptions
+            })),
+          }
+        }
       },
       {
         test: /\.js$/,
-        loader: 'babel-loader',
-        include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')]
+        use: 'babel-loader',
+        exclude: /node_modules/
       },
       {
-        test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-        loader: 'url-loader',
-        options: {
-          limit: 10000,
-          name: utils.assetsPath('img/[name].[hash:7].[ext]')
-        }
+        test: /\.css$/,
+        use: ['css-hot-loader'].concat(ExtractTextPlugin.extract({
+          use: cssOptions,
+          fallback: styleLoaderOptions
+        }))
       },
       {
-        test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-        loader: 'url-loader',
-        options: {
-          limit: 10000,
-          name: utils.assetsPath('media/[name].[hash:7].[ext]')
-        }
+        test: /\.less$/,
+        use: ['css-hot-loader'].concat(ExtractTextPlugin.extract({
+          use: lessOptions,
+          fallback: styleLoaderOptions
+        }))
       },
       {
-        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-        loader: 'url-loader',
-        options: {
-          limit: 10000,
-          name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
-        }
+        test: /\.scss$/,
+        use: ['css-hot-loader'].concat(ExtractTextPlugin.extract({
+          use: sassOptions,
+          fallback: styleLoaderOptions
+        }))
+      },
+      {
+        test: /\.html$/,
+        use: [{
+          loader: 'html-loader',
+          options: {
+            root: resolve(__dirname, 'src'),
+            attrs: ['img:src', 'link:href']
+          }
+        }]
+      },
+      {
+        test: /\.(png|jpg|jpeg|gif|eot|ttf|woff|woff2|svg|svgz)(\?.+)?$/,
+        exclude: /favicon\.png$/,
+        use: [{
+          loader: 'url-loader',
+          options: {
+            limit: 10000,
+            name: 'assets/img/[name].[hash:7].[ext]'
+          }
+        }]
       }
     ]
   },
-  node: {
-    // prevent webpack from injecting useless setImmediate polyfill because Vue
-    // source contains it (although only uses it if it's native).
-    setImmediate: false,
-    // prevent webpack from injecting mocks to Node native modules
-    // that does not make sense for the client
-    dgram: 'empty',
-    fs: 'empty',
-    net: 'empty',
-    tls: 'empty',
-    child_process: 'empty'
-  }
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+          chunks: 'initial',
+          minChunks: 3,
+          name: 'commons',
+          enforce: true
+        }
+      }
+    }
+  },
+  performance: {
+    hints: false
+  },
+  plugins: [
+    new webpack.optimize.ModuleConcatenationPlugin(),
+    extractLESS,
+    extractSASS,
+    extractCSS
+  ]
 }
+config.plugins = [...config.plugins, ...htmlWebpackPluginArray]
+module.exports = config
