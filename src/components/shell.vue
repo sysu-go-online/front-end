@@ -54,7 +54,6 @@ export default {
 
     var term = this.Xterm()
     var ws = this.Ws()
-    console.log(term)
   　term.on('key', function(key, ev) {
       var printable =
         !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey

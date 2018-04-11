@@ -14,7 +14,7 @@
 
 <script>
 // require component
-import { codemirror } from 'codemirror/lib/codemirror'
+import { codemirror } from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/go/go.js'
 import 'codemirror/theme/mbo.css'
@@ -25,7 +25,7 @@ export default {
   name: 'Editor',
   data () {
     return {
-      code: '',
+      code: '12312',
       cmOptions: {
         // codemirror options
         indentUnit: 2,
