@@ -31,7 +31,7 @@ export default {
 </script>
 
 <style>
-html, body, #app{
+html, body{
     height: 100%;
     width: 100%;
     margin: 0;
