@@ -1,111 +1,75 @@
 <template>
     <div id="project_view">
-        <div id="structure_buttons">
-            <Icon class="control" type="ios-compose" size="20"></Icon>
-            <Icon class="control" type="folder" size="20"></Icon>
-            <Icon class="control" type="trash-a" size="20"></Icon>
-        </div>
-        <div id="structure_view">
-            <Tree :data="baseData" :render="renderContent" on-select-change="onSelect"></Tree>
-        </div>
+        <m-tree ref="tree" v-model="tableTree" @SaveEdit="SaveEdit" @DelNode="DelNode"></m-tree>
     </div>
 </template>
 
 <script>
-/*
-*/
+    import MTree from './Tree/index.vue'
     export default {
         data () {
             return {
-                baseData: [
+                tableTree: [
                     {
-                        title: 'parent 1',
-                        expand: true,
-                        selected: true,
-                        type: 'dir'
+                        value: this.$utilHelper.generateUUID(),
+                        label:'project',
+                        status: 0,
+                        type: 'dir',
+                        children: [
+                            {
+                                value: this.$utilHelper.generateUUID(),
+                                label: 'include',
+                                status: 0,
+                                type: 'dir',
+                                children: [
+                                    {
+                                        value: this.$utilHelper.generateUUID(),
+                                        label: 'lib.js',
+                                        status: 0,
+                                        type: 'file'
+                                    }
+                                ]
+                            },
+                            {
+                                value: this.$utilHelper.generateUUID(),
+                                label: 'bin',
+                                status: 0,
+                                type: 'dir',
+                                children: [
+                                    {
+                                        value: this.$utilHelper.generateUUID(),
+                                        label: 'main',
+                                        status: 0,
+                                        type: 'file'
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 ],
-                project: 'project',
-                folder: [{
-                    title: this.project,
-                    expand: false,
-                    selected: true
-                }],
-                file: [{
-                    title: this.project,
-                    expand: false,
-                    selected: true
-                }]
             }
         },
+        components: {
+            MTree
+        },
         methods: {
-            renderContent (h, { root, node, data }) {
-                if(data.type == 'file') {
-                    return h('span', {
-                        style: {
-                            display: 'inline-block',
-                            width: '100%'
-                        }
-                    }, [
-                        h('span', [
-                            h('Icon', {
-                                props: {
-                                    type: 'ios-paper-outline'
-                                },
-                                style: {
-                                    marginRight: '8px'
-                                }
-                            }),
-                            h('span', data.title)
-                        ]),
-                        h('span', {
-                            style: {
-                                display: 'inline-block',
-                                float: 'right',
-                                marginRight: '32px'
-                            }
-                        })
-                    ]);
-                } else if(data.type == 'dir'){
-                    return h('span', {
-                        style: {
-                            display: 'inline-block',
-                            width: '100%'
-                        }
-                    }, [
-                        h('span', [
-                            h('Icon', {
-                                props: {
-                                    type: 'ios-folder-outline'
-                                },
-                                style: {
-                                    marginRight: '8px'
-                                }
-                            }),
-                            h('span', data.title)
-                        ])
-                    ]);
+            SaveEdit: function (parentNode,data,next) {
+                var param = {
+                parentNode:parentNode,
+                node:data
                 }
+                next(true, 0)
+                console.log("save success!")
             },
-            append (data) {
-                const children = data.children || [];
-                children.push({
-                    title: 'appended node',
-                    expand: true
-                });
-                this.$set(data, 'children', children);
-            },
-            remove (root, node, data) {
-                const parentKey = root.find(el => el === node).parent;
-                const parent = root.find(el => el.nodeKey === parentKey).node;
-                const index = parent.children.indexOf(data);
-                parent.children.splice(index, 1);
-            },
-            onSelect (){
-                console.log("select")
+            DelNode: function (parentNode,data,next) {
+                var param = {
+                node:data
+                }
+                next(true, 0)
+                console.log("delete success!")
             }
-        }
     }
+}
 </script>
 
 <style>
@@ -130,23 +94,5 @@
     border-radius: 5px;
     width: 70px;
     text-align: center;
-}
-#structure_buttons {
-    position: relative;
-    width: 50%; 
-    height: 20px;
-    margin-left: 50%; 
-    margin-top: 10px; 
-}
-#structure_view {
-    position: relative;
-    width: 100%;
-    height: calc(100% - 30px);
-    overflow-y: auto;
-    overflow-x: auto;
-}
-.control {
-    color:#009A61;
-    margin: 0 5px 0 5px;
 }
 </style>
