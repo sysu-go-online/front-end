@@ -103,7 +103,7 @@ export default {
 <style>
 .my_terminal {
   width: 100%;
-  height: 432px;
+  height: 190px;
   box-sizing: border-box;
   overflow: hidden;
 }

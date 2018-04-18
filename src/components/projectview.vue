@@ -77,7 +77,6 @@
     position: absolute;
     left: 0;
     height: 100%;
-    width: 10%;
     background: #292929;
     box-sizing: border-box;
     overflow-y: hidden;

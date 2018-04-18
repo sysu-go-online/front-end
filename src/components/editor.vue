@@ -1,6 +1,5 @@
 <template>
   <div id="editor">
-      <p class="func_button">保存</p>
       <div id="edit-area">
           <codemirror v-model="code"
                 :options="cmOptions"
@@ -9,6 +8,7 @@
                 @input="onCmCodeChange">
           </codemirror>
       </div>
+      <p class="func_button">保存</p>
   </div>
 </template>
 
@@ -69,10 +69,9 @@ export default {
 
 <style>
 #editor{
-    left: 10%;
     position: relative;
-    height: 100%;
-    width: 55%;
+    height: calc(100% - 200px);
+    width: 100%;
     background: #141414;
     box-sizing: border-box;
     display: inline-block;
@@ -88,5 +87,10 @@ export default {
 .vue-codemirror,.CodeMirror{
     height: 100% !important;
     width: 100%;
+}
+.func_button {
+    position:absolute;
+    top: calc(100% - 32px);
+    right: 20px;
 }
 </style>

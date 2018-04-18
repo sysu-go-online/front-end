@@ -1,14 +1,35 @@
 <template>
     <div id="header">
-        <h1>在线编辑器</h1>
-        <p id="signin">登陆</p>
-        <p id="register">注册</p>
+        <p id="name">在线编辑器</h1>
+        <div id="headImg"></div>
+        <p id="select">
+            <select v-model='selected' @click="ss()">
+                <option v-for="(option,index) in options" v-bind:value="option.value">
+                    {{option.text}}
+                </option>
+            </select>
+        </p>
     </div>
 </template>
 
 <script>
 export default {
-    name: 'Header'
+    name: 'Header',
+    data() {
+        return {
+            selected: '0',   // 默认选中
+            options: [
+                {text: 'UserName', value: '0'},
+                {text: 'Others', value: '1'},
+                {text: 'Quit', value: '2'}
+            ]
+        }
+    },
+    methods: {
+        ss: function () {
+            // Todo
+        },
+    }
 }
 </script>
 
@@ -19,28 +40,33 @@ export default {
     width: 100%;
     box-sizing: border-box;
 }
-h1{
+
+#name {
     position: absolute;
     margin: 0;
-    padding: 5px 10px 3px 10px;
-    font-size: 20px;
+    padding: 5px 20px 5px 20px;
+    font-size: 16px;
     color: #009A61;
     box-sizing: border-box;
     display: inline-block;
 }
-#signin, #register{
+
+#headImg, #select{
     margin: 5px 0 3px 0;
     position: absolute;
-    width: 40px;
-    font-size: 18px;
-    color: #009A61;
-
     display: inline-block;
 }
-#signin{
-    right: 60px;
+#headImg{
+    right: 100px;
+    width: 24px;
+    height: 24px;
+    border:1px solid #aaa;
+    border-radius: 12px;
+    background-color: #ddd;
 }
-#register{
-    right: 10px;
+#select{
+    right: 20px;
+    top: 5px;
+    font-size: 10px;
 }
 </style>
