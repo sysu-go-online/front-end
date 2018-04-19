@@ -1,4 +1,4 @@
 FROM nginx
-COPY dist/* /server/static/
+COPY static/ /server/static
 RUN ["ls" "/server/static"]
 CMD ["nginx", "-g", "daemon off;"]
