@@ -4,7 +4,7 @@ services:
 
 language: node_js
 node_js:
-  - "iojs"
+  # - "iojs"
   - "7"
 
 before_install:

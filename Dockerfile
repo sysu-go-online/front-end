@@ -1,3 +1,3 @@
 FROM nginx
-ADD dist/* /server/static
+ADD dist/* /server/static/
 CMD ["nginx", "-g", "daemon off;"]
