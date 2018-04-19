@@ -10,6 +10,7 @@ node_js:
 before_install:
   - npm install
   - npm run build
+  - mv dist/onlineide-code.html dist/index.html
   - docker build -t txzdream/go-online-front_end:dev .
 
 script:
