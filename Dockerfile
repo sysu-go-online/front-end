@@ -1,3 +1,3 @@
 FROM nginx
-ADD dist/* /server/static/
+COPY dist/* /server/static/
 CMD ["nginx", "-g", "daemon off;"]
