@@ -8,6 +8,7 @@ node_js:
   - "7"
 
 before_install:
+  - npm install
   - npm run build
   - docker build -t txzdream/go-online-front_end:dev
 
