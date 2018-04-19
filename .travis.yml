@@ -1,4 +1,19 @@
+sudo: required
+services:
+  - docker
+
 language: node_js
 node_js:
   - "iojs"
   - "7"
+
+before_install:
+  - npm run build
+  - docker build -t txzdream/go-online-front_end:dev
+
+script:
+  - true
+
+after_success:
+  - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+  - docker push txzdream/go-online-front_end:dev
