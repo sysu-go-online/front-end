@@ -17,7 +17,7 @@
             MTree
         },
         created: function () {
-            this.$http.get('http://private-c6f403-goonline.apiary-mock.com/api/1','GET').then(
+            this.$http.get('/api/1','GET').then(
                 Response => {
                     this.tableTree = Response.data
                 },

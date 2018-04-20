@@ -4,7 +4,7 @@
       <span v-if="file != ''" class="file">
         <span class="file-name">{{file}}</span>
         <span class="span_icon">
-          <Icon style="margin-left: 8px" color="#bebebe" type="close" size="6" @click.native="closeFile"></Icon>
+          <Icon color="#bebebe" type="close" size="10" @click.native="closeFile"></Icon>
        </span>
       </span>
       <span id="save"><Button type="success" size="small" @click.native="Save">Save</Button></span>
@@ -72,19 +72,14 @@ export default {
       this.code = newCode
     },
     Save(){
-      this.filedata.projectid = 1
-      this.filedata.filepath = 'test'
-      this.$http.post('http://private-c6f403-goonline.apiary-mock.com/api/'+this.filedata.projectid+'/tree/'+this.filedata.filepath, {code})
+      this.$http.post('/api/'+this.filedata.projectid+'/tree/'+this.filedata.filepath, { code: this.code })
         .then(Response => {
           console.log(Response.status)
         })
     },
-    getFile: function(val, request, that) {
-      var code = ""
-      val.projectid = 1
-      val.filepath = 'test'
+    getFile: function(val, that) {
       console.log(val)
-      that.$http.get('http://private-c6f403-goonline.apiary-mock.com/api/'+val.projectid+'/tree/'+val.filepath)
+      that.$http.get('/api/'+val.projectid+'/tree/'+val.filepath)
         .then( Response => {
           that.code = Response.data
         })
@@ -147,7 +142,12 @@ export default {
   background: #2b2b2b;
   border-color: #2b2b2b  #bebebe #009A61  #bebebe;
 }
-.file-name:hover .span_icon {
+.file .span_icon {
+  visibility: hidden;
+  display: inline-block;
+}
+.file:hover .span_icon {
+  visibility: visible;
   display: inline-block;
 }
 #save {
