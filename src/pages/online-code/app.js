@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import App from './app.vue'
-import {Tree, Input} from 'element-ui'
+import VueResource from 'vue-resource'
+import {Input} from 'element-ui'
+import Tree from '../../components/Tree/tree/index.js'
 import iView from 'iview'
 import util from '../../util/util'
 import log from '../../util/logger'
@@ -12,6 +14,8 @@ Vue.use(Input)
 Vue.use(Tree)
 //引用iview
 Vue.use(iView)
+//引入vue-resource
+Vue.use(VueResource)
 //上线后不在显示警告信息
 Vue.config.productionTip = false
 //引入log工具

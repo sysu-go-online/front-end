@@ -10,14 +10,14 @@ export default {
     })
     return uuid;
   },
-  getNode:function (tree, nodeId) {
+  getNode: function (tree, nodeId) {
     this.parentNode = null
     this.node = null
     var searchNode = this.searchNode(tree,nodeId,null)
     if(!searchNode.parentNode){
       searchNode.parentNode = {
-        value:null,
-        label:null,
+        id:null,
+        name:null,
         children:tree
       }
     }
@@ -30,10 +30,10 @@ export default {
         break;
       }
       var obj = tree[i];
-      if (!obj || !obj.value) {
+      if (!obj || !obj.id) {
         continue;
       }
-      if (obj.value == nodeId) {
+      if (obj.id == nodeId) {
         this.node = obj;
         this.parentNode = parentNode
         break;
@@ -54,10 +54,10 @@ export default {
   clearTable:function (tree) {
     for (var i = 0; i < tree.length; i++) {
       var obj = tree[i];
-      if (!obj || !obj.value) {
+      if (!obj || !obj.id) {
         continue;
       }
-      if (obj.status == -1) {
+      if (obj.edit_status == -1) {
         tree.splice(i,1)
         i--
         continue;

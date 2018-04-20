@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "codemirror": "^5.36.0",
-    "element-ui": "^2.3.2",
+    "element-ui": "^2.3.4",
     "vue": "^2.5.16",
     "vue-multiselect": "^2.1.0",
     "xterm": "^3.2.0"
@@ -39,6 +39,7 @@
     "url-loader": "^1.0.1",
     "vue-codemirror": "^4.0.4",
     "vue-loader": "^14.2.2",
+    "vue-resource": "^1.5.0",
     "vue-template-compiler": "^2.5.16",
     "webpack": "^4.4.1",
     "webpack-cli": "^2.0.13",

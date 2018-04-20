@@ -1,6 +1,6 @@
 <template>
     <div id="project_view">
-        <m-tree ref="tree" v-model="tableTree" @SaveEdit="SaveEdit" @DelNode="DelNode"></m-tree>
+        <m-tree ref="tree" v-model="tableTree" @OpenFile="OpenFile" @SaveEdit="SaveEdit" @DelNode="DelNode"></m-tree>
     </div>
 </template>
 
@@ -9,48 +9,19 @@
     export default {
         data () {
             return {
-                tableTree: [
-                    {
-                        value: this.$utilHelper.generateUUID(),
-                        label:'project',
-                        status: 0,
-                        type: 'dir',
-                        children: [
-                            {
-                                value: this.$utilHelper.generateUUID(),
-                                label: 'include',
-                                status: 0,
-                                type: 'dir',
-                                children: [
-                                    {
-                                        value: this.$utilHelper.generateUUID(),
-                                        label: 'lib.js',
-                                        status: 0,
-                                        type: 'file'
-                                    }
-                                ]
-                            },
-                            {
-                                value: this.$utilHelper.generateUUID(),
-                                label: 'bin',
-                                status: 0,
-                                type: 'dir',
-                                children: [
-                                    {
-                                        value: this.$utilHelper.generateUUID(),
-                                        label: 'main',
-                                        status: 0,
-                                        type: 'file'
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ],
+                tableTree: [],
+                projectId: 1
             }
         },
         components: {
             MTree
+        },
+        created: function () {
+            this.$http.get('http://private-c6f403-goonline.apiary-mock.com/api/1','GET').then(
+                Response => {
+                    this.tableTree = Response.data
+                },
+            )
         },
         methods: {
             SaveEdit: function (parentNode,data,next) {
@@ -59,14 +30,17 @@
                 node:data
                 }
                 next(true, 0)
-                console.log("save success!")
             },
             DelNode: function (parentNode,data,next) {
                 var param = {
                 node:data
                 }
                 next(true, 0)
-                console.log("delete success!")
+            },
+            OpenFile: function (file) {
+                var data = file
+                data['projectid'] = this.projectId
+                this.$emit('openfile', data)
             }
     }
 }
@@ -82,16 +56,5 @@
     overflow-y: hidden;
     overflow-x: hidden;
     display: inline-block;
-}
-.func_button{
-    background: rgba(17, 17, 17, 0.4);
-    color: #009A61;
-    margin: 5px;
-    padding: 1px;
-    font-size: 14px;
-    border: solid #009A61 1px;
-    border-radius: 5px;
-    width: 70px;
-    text-align: center;
 }
 </style>

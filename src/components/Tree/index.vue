@@ -11,11 +11,9 @@
         :data="treeData"
         @node-click="handleNodeClick"
         ref="tree"
-        node-key="value"
-        :expand-on-click-node="false"
-        :render-content="renderContent"
-        :accordion="true"
-        default-expand-all>
+        node-key="id"
+        :expand-on-click-node="true"
+        :render-content="renderContent">
       </el-tree>
     </div>
   </div>
@@ -34,6 +32,22 @@
     methods: {
       handleNodeClick(nodeData, node, store) {
         this.selectedNode = node
+        if (nodeData.type == 'dir'){
+          return
+        }
+        var data = nodeData
+        var filePath = nodeData.name
+        var parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
+        while (parentNode.name != null) {
+          data = parentNode
+          filePath = parentNode.name + '/' + filePath
+          parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
+        }
+        var file = {
+          name: nodeData.name,
+          filepath: filePath
+        } 
+        this.$emit('OpenFile', file)
      },
       //node 树节点，包含data对象(这是它的一个属性)
       //data 树节点数据对象
@@ -51,7 +65,7 @@
             //删除节点
             Delete: (nodeData) => {
               //递归查找父节点
-              var parentNode = this.$utilHelper.getNode(this.treeData,data.value).parentNode
+              var parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
               this.runParam.parentNode = parentNode
               this.runParam.data = data
               this.runParam.nodeData = nodeData
@@ -61,29 +75,11 @@
             //保存节点
             SaveEdit:(nodeData)=> {
               //递归查找父节点
-              var parentNode = this.$utilHelper.getNode(this.treeData,data.value).parentNode
+              var parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
               this.runParam.parentNode = parentNode
               this.runParam.data = data
               this.runParam.nodeData = nodeData
               this.$emit('SaveEdit',parentNode,data,this.CanSaveNext)
-            },
-            //撤销修改
-            CancelEdit:(nodeData)=>{
-              //递归查找父节点
-              var parentNode = this.$utilHelper.getNode(this.treeData,data.value).parentNode
-              if(data.isAdd){
-                parentNode.children.forEach((v,i)=>{
-                  if(v.value == data.value){
-                    parentNode.children.splice(i,1)
-                  }
-                })
-              }else{
-                parentNode.children.forEach((v,i)=>{
-                  if(v.value == data.value){
-                    parentNode.children.splice(i,1,JSON.parse(JSON.stringify(nodeData)))
-                  }
-                })
-              }
             }
           }
         })
@@ -94,16 +90,16 @@
         let data = this.runParam.data
         if(isNext){
           parentNode.children.forEach((v,i)=>{
-            if(v.value == data.value){
-              data.status = 0
+            if(v.id == data.id){
+              data.edit_status = 0
               parentNode.children.splice(i,1,data)
             }
           })
         }else{
           if(!data.isAdd){
             parentNode.children.forEach((v,i)=>{
-              if(v.value == nodeData.value){
-                data.label = nodeData.label
+              if(v.id == nodeData.id){
+                data.name = nodeData.name
                 parentNode.children.splice(i,1,data)
               }
             })
@@ -117,7 +113,7 @@
         let data = this.runParam.data
         if(isNext){
           parentNode.children.forEach((v,i)=>{
-            if(v.value == data.value){
+            if(v.id == data.id){
               parentNode.children.splice(i,1)
             }
           })
@@ -129,9 +125,9 @@
           return
         }
         this.$refs.tree.append({
-          value: this.$utilHelper.generateUUID(),
-          label: '请输入文件名称',
-          status: 1,
+          id: this.$utilHelper.generateUUID(),
+          name: '请输入文件名称',
+          edit_status: 1,
           type: 'file'
        }, this.selectedNode)
       },
@@ -140,13 +136,12 @@
           return
         }
         this.$refs.tree.append({
-          value:  this.$utilHelper.generateUUID(),
-          label: '请输入文件名称',
-          status: 1,
+          id:  this.$utilHelper.generateUUID(),
+          name: '请输入文件夹名称',
+          edit_status: 1,
           type: 'dir',
           children: []
        }, this.selectedNode)
-       console.log(this)
       }
     },
     props:{
@@ -162,7 +157,6 @@
       treeData:{
         handler:function(val){
           this.$emit('input',val)
-          console.log("success")
         },
         deep:true
       }

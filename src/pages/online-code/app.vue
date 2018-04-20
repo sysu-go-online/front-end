@@ -2,10 +2,10 @@
   <div id="home">
     <heads></heads>
     <div id="content">
-      <project-view v-bind:style="{width: projectViewWidth}"></project-view>
+      <project-view @openfile="openFile" v-bind:style="{width: projectViewWidth}"></project-view>
       <div id="vertialLine" v-on:dblclick="showProjectView" v-bind:style="{left: vertialLineLeft}"></div>
       <div id="command_line" v-bind:style="{width: commandLineWidth, left: commandLineLeft}">
-        <editor v-bind:style="{height: editorHeight}"></editor>
+        <editor :fileData="this.fileData" v-bind:style="{height: editorHeight}"></editor>
         <div id="horezonLine" v-on:dblclick="showShell"></div>
         <shell v-bind:style="{height: shellHeight}"></shell>
       </div>
@@ -36,6 +36,7 @@ export default {
       vertialLineLeft: '200px',
       editorHeight: 'calc(100% - 200px)',
       shellHeight: '190px',
+      fileData: {},
     }
   },
   methods: {
@@ -60,6 +61,9 @@ export default {
         this.editorHeight = 'calc(100% - 200px)'
         this.shellHeight = '190'
       }
+    },
+    openFile: function (data) {
+      this.fileData = data
     }
   }
 }

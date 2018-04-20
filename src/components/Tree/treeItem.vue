@@ -1,19 +1,15 @@
 <template>
   <div class="span_item">
-    <span @click="Expanded">
+    <span>
       <Icon  v-if="node.type == 'dir' && this.treeNode.expanded" type="android-folder-open" color="#009861"></Icon>
       <Icon  v-if="node.type == 'dir' && !this.treeNode.expanded" type="android-folder" color="#009861"></Icon>
       <Icon v-if="node.type == 'file'" type="android-document" color="#009861"></Icon>
-      <Input v-if="node.status == 1" style="width: 100px;" v-model="node.label" size="small"></Input>
-      <span v-if="node.status == 0" style="color: #009861;">{{ this.node.label }}</span>
-    </span>
-    <span v-if="node.status == 1">
-      <Button  style="margin-left: 8px;" size="small" type="success" icon="checkmark-circled" @click.native="SaveEdit">确认</Button>
-      <Button style="margin-left: 8px;" size="small" type="ghost" icon="checkmark-circled" @click.native="CancelEdit">取消</Button>
+      <Input v-if="node.edit_status == 1" style="width: 100px;" v-model="node.name" size="small" @on-enter="onEnter" autofocus></Input>
+      <span v-if="node.edit_status == 0" style="color: #009861;">{{ this.node.name }}</span>
     </span>
     <span class="span_icon">
-       <Icon v-if="node.status == 0" style="margin-left: 8px" color="gray" type="edit" size="16" @click.native="OpenEdit"></Icon>
-       <Icon v-if="node.status == 0" style="margin-left: 8px" type="ios-trash" color="red" size="18" @click.native="Delete"></Icon>
+       <Icon v-if="node.edit_status == 0" style="margin-left: 8px" color="gray" type="edit" size="16" @click.native="OpenEdit"></Icon>
+       <Icon v-if="node.edit_status == 0" style="margin-left: 8px" type="ios-trash" color="red" size="18" @click.native="Delete"></Icon>
     </span>
   </div>
 </template>
@@ -42,27 +38,19 @@
       },
       methods:{
         OpenEdit(){
-          this.node.status = 1
+          this.node.edit_status = 1
           this.node.isAdd = false
-          console.log(this.node)
         },
         Append(){
           //添加节点事件
           this.$emit('Append')
         },
-        SaveEdit(){
+        onEnter(){
           //保存节点事件
           this.$emit('SaveEdit',this.nodeData)
         },
-        CancelEdit(){
-          this.node.status = 0
-          this.$emit('CancelEdit',this.nodeData)
-        },
         Delete(){
           this.$emit('Delete',this.nodeData)
-        },
-        Expanded(){
-          this.treeNode.expanded = this.treeNode.expanded?false:true
         }
       },
       watch:{
