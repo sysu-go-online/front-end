@@ -39,8 +39,6 @@
             },
             OpenFile: function (file) {
                 var data = file
-                console.log('projectdata--------------------------')
-                console.log(data)
                 data['projectid'] = this.projectId
                 this.$emit('openfile', data)
             }
