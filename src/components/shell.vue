@@ -16,7 +16,8 @@ export default {
   data() {
     return {
       term: null,
-      ws: null
+      ws: null,
+      command: ''
     }
   },
   methods: {
@@ -44,57 +45,46 @@ export default {
 
       return term
     },
-    Ws: function() {
-      return new WebSocket('ws://localhost:8080/echo')
+    terminalFlow: function(command,that) {
+      if (that.ws == null) {
+        return
+      }
+      that.ws = new WebSocket('ws://localhost:8080/echo')
+      that.ws.send(command)
+      that.ws.onmessage = function (evt) {
+        that.xterm.write(evt.data)
+      }
+      that.ws.onclose = function(evt) {
+        that.command = ''
+        that.term.prompt()
+        that.ws = null
+      }
     }
   },
   mounted() {
-    var str = ''
-    var input_state = true
+    this.term = this.Xterm()
 
-    var term = this.Xterm()
-    var ws = this.Ws()
-  　term.on('key', function(key, ev) {
+  　this.term.on('key', function(key, ev) {
       var printable =
         !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
-      ws.onopen = function() {
-        console.log('success')
-      }
-      ws.onerror = function() {
-        console.log('error')
-      }
 
       if (ev.keyCode == 13) {
-        term.prompt()
-        if (input_state) {
-          ws.send(str)
-        }
-
-        input_state = false
-        ws.onmessage = function(ev) {
-          term.write(ev.data)
-          term.prompt()
-          str = ''
-          input_state = true
-        }
+          this.terminalFlow(this.command, this)
       } else if (ev.keyCode == 8) {
         // Do not delete the prompt
-        if (term.buffer.x > 2) {
-          str = str.slice(0, str.length)
-          term.write('\b \b')
+        if (this.ws === null && this.term.buffer.x > 2) {
+          this.command = this.command.slice(0, this.command.length)
+          this.term.write('\b \b')
         }
       } else if (printable) {
-        if (input_state) {
-          str += key
-        }
-        term.write(key)
+        this.command += key
+        this.term.write(key)
       }
     })
-    term.on('paste', function(data, ev) {
-      if (input_state) {
-        str += data
-      }
-      term.write(data)
+
+    this.term.on('paste', function(data, ev) {
+        this.command += data
+      this.term.write(data)
     })
   }
 }
