@@ -62,29 +62,29 @@ export default {
     }
   },
   mounted() {
+    var that = this
     this.term = this.Xterm()
-
   　this.term.on('key', function(key, ev) {
       var printable =
         !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
 
       if (ev.keyCode == 13) {
-          this.terminalFlow(this.command, this)
+          that.terminalFlow(that.command, that)
       } else if (ev.keyCode == 8) {
         // Do not delete the prompt
-        if (this.ws === null && this.term.buffer.x > 2) {
-          this.command = this.command.slice(0, this.command.length)
-          this.term.write('\b \b')
+        if (that.ws === null && that.term.buffer.x > 2) {
+          that.command = that.command.slice(0, that.command.length)
+          that.term.write('\b \b')
         }
       } else if (printable) {
-        this.command += key
-        this.term.write(key)
+        that.command += key
+        that.term.write(key)
       }
     })
 
     this.term.on('paste', function(data, ev) {
-        this.command += data
-      this.term.write(data)
+        that.command += data
+      that.term.write(data)
     })
   }
 }

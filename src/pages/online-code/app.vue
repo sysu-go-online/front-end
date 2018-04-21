@@ -65,6 +65,8 @@ export default {
       }
     },
     openFile: function (data) {
+      console.log('data--------------------------')
+      console.log(data)
       this.fileData = data
     }
   }
