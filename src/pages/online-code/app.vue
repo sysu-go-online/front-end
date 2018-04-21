@@ -2,11 +2,13 @@
   <div id="home">
     <heads></heads>
     <div id="content">
+      <div id="menu">
+        <div class="menu-icon"><Icon v-bind:type="projectViewIcon" size="40" @click.native="showProjectView"></Icon></div>
+        <div class="menu-icon"><Icon v-bind:type="shellIcon" size="32" @click.native="showShell"></Icon></div>
+      </div>
       <project-view @openfile="openFile" v-bind:style="{width: projectViewWidth}"></project-view>
-      <div id="vertialLine" v-on:dblclick="showProjectView" v-bind:style="{left: vertialLineLeft}"></div>
-      <div id="command_line" v-bind:style="{width: commandLineWidth, left: commandLineLeft}">
+      <div id="command_line" v-bind:style="{left: commandLineLeft}">
         <editor :fileData="this.fileData" v-bind:style="{height: editorHeight}"></editor>
-        <div id="horezonLine" v-on:dblclick="showShell"></div>
         <shell v-bind:style="{height: shellHeight}"></shell>
       </div>
     </div>
@@ -31,11 +33,11 @@ export default {
   data() {
     return {
       projectViewWidth: '200px',
-      commandLineWidth: 'calc(100% - 202px)',
-      commandLineLeft: '202px',
-      vertialLineLeft: '200px',
+      commandLineLeft: '250px',
       editorHeight: 'calc(100% - 200px)',
       shellHeight: '190px',
+      projectViewIcon: 'ios-copy',
+      shellIcon: 'ios-albums',
       fileData: {},
     }
   },
@@ -43,23 +45,23 @@ export default {
     showProjectView: function() {
       if (this.projectViewWidth == '200px') {
         this.projectViewWidth = '0'
-        this.commandLineWidth = 'calc(100% - 2px)'
-        this.commandLineLeft = '2px'
-        this.vertialLineLeft = '0'
+        this.commandLineLeft = '50px'
+        this.projectViewIcon = 'ios-copy-outline'
       } else {
         this.projectViewWidth = '200px'
-        this.commandLineWidth = 'calc(100% - 202px)'
-        this.commandLineLeft = '202px'
-        this.vertialLineLeft = '200px'
+        this.commandLineLeft = '250px'
+        this.projectViewIcon = 'ios-copy'
       }
     },
     showShell: function() {
       if (this.editorHeight == 'calc(100% - 200px)') {
-        this.editorHeight = 'calc(100% - 8px)'
+        this.editorHeight = 'calc(100% - 6px)'
         this.shellHeight = '0'
+        this.shellIcon = 'ios-albums-outline'
       } else {
         this.editorHeight = 'calc(100% - 200px)'
-        this.shellHeight = '190'
+        this.shellHeight = '190px'
+        this.shellIcon = 'ios-albums'
       }
     },
     openFile: function (data) {
@@ -83,6 +85,21 @@ html, body{
   -moz-osx-font-smoothing: grayscale;
   color: #385c80;
 }
+#menu {
+    position: absolute;
+    left: 0;
+    height: 100%;
+    width: 50px;
+    background: #000;
+    box-sizing: border-box;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    display: inline-block;
+}
+.menu-icon {
+  color:#009A61;
+  padding: 10px;
+}
 #home{
   height: 100%;
   width: 100%;
@@ -103,9 +120,9 @@ html, body{
 }
 #command_line{
     position: absolute;
-    left: 202px;
+    left: 250px;
     height: 100%;
-    width: calc(100% - 202px);
+    width: 100%;
     box-sizing: border-box;
     display: inline-block;
 }
