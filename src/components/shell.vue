@@ -49,7 +49,7 @@ export default {
       if (that.ws == null) {
         return
       }
-      that.ws = new WebSocket('ws://localhost:8080/echo')
+      that.ws = new WebSocket('ws:/ws')
       that.ws.send(command)
       that.ws.onmessage = function (evt) {
         that.xterm.write(evt.data)
