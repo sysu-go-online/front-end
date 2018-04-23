@@ -34,18 +34,18 @@
                     filePath = parentNode.name + '/' + filePath
                     parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
                 }
-                this.$http.put('/api'+ this.projectId + '/tree/' + this.currentFiledata.filepath)
+                this.$http.put('/api/'+ this.projectId + '/tree/' + this.currentFiledata.filepath)
                       .then(Response => {
                           console.log(Response.status)
                       })
                 next(true, 0)
             },
             DelNode: function (parentNode,data,next) {
-                if (this.currentFiledata.nodeData.id == data.id) {
-                    this.$http.delete('/api'+ this.projectId + '/tree/' + this.currentFiledata.filepath)
+                this.$http.delete('/api/'+ this.projectId + '/tree/' + this.currentFiledata.filepath)
                       .then(Response => {
                           console.log(Response.status)
                       })
+                if (this.currentFiledata.nodeData.id == data.id) {
                     this.currentFiledata.name = ''
                     this.currentFiledata.filepath = ''
                     this.$emit('openfile', this.currentFiledata)

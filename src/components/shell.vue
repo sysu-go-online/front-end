@@ -46,7 +46,7 @@ export default {
       return term
     },
     terminalFlow: function(command,that) {
-      if (that.ws == null) {
+      if (that.ws != null) {
         return
       }
       that.ws = new WebSocket('ws://120.79.0.17/api/ws')
@@ -69,7 +69,8 @@ export default {
         !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
 
       if (ev.keyCode == 13) {
-          that.terminalFlow(that.command, that)
+        that.term.write('/r/n')  
+        that.terminalFlow(that.command, that)
       } else if (ev.keyCode == 8) {
         // Do not delete the prompt
         if (that.ws === null && that.term.buffer.x > 2) {
