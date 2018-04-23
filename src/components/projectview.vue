@@ -10,7 +10,8 @@
         data () {
             return {
                 tableTree: [],
-                projectId: 1
+                projectId: 1,
+                currentFiledata: {}
             }
         },
         components: {
@@ -25,22 +26,36 @@
         },
         methods: {
             SaveEdit: function (parentNode,data,next) {
-                var param = {
-                parentNode:parentNode,
-                node:data
+                var data = parentNode
+                var filePath = parentNode.name + '/' + data.name
+                var parentNode = this.$utilHelper.getNode(this.tableTree, data.id).parentNode
+                while (parentNode.name != null) {
+                    data = parentNode
+                    filePath = parentNode.name + '/' + filePath
+                    parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
                 }
+                this.$http.put('/api'+ this.projectId + '/tree/' + this.currentFiledata.filepath)
+                      .then(Response => {
+                          console.log(Response.status)
+                      })
                 next(true, 0)
             },
             DelNode: function (parentNode,data,next) {
-                var param = {
-                node:data
+                if (this.currentFiledata.nodeData.id == data.id) {
+                    this.$http.delete('/api'+ this.projectId + '/tree/' + this.currentFiledata.filepath)
+                      .then(Response => {
+                          console.log(Response.status)
+                      })
+                    this.currentFiledata.name = ''
+                    this.currentFiledata.filepath = ''
+                    this.$emit('openfile', this.currentFiledata)
                 }
                 next(true, 0)
             },
             OpenFile: function (file) {
-                var data = file
-                data['projectid'] = this.projectId
-                this.$emit('openfile', data)
+                this.currentFiledata = file
+                this.currentFiledata['projectid'] = this.projectId
+                this.$emit('openfile', this.currentFiledata)
             }
     }
 }

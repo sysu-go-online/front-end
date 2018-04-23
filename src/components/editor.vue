@@ -78,6 +78,9 @@ export default {
         })
     },
     getFile: function(val, that) {
+      if (val.name == '') {
+        return
+      }
       that.$http.get('/api/'+val.projectid+'/tree/'+val.filepath)
         .then( Response => {
           that.code = Response.data

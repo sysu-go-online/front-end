@@ -45,7 +45,8 @@
         }
         var file = {
           name: nodeData.name,
-          filepath: filePath
+          filepath: filePath,
+          nodeData: nodeData
         } 
         this.$emit('OpenFile', file)
      },
@@ -70,7 +71,6 @@
               this.runParam.data = data
               this.runParam.nodeData = nodeData
               this.$emit('DelNode',parentNode,data,this.CanDelNext)
-
             },
             //保存节点
             SaveEdit:(nodeData)=> {
