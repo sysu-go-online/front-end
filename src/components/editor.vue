@@ -72,7 +72,7 @@ export default {
       this.code = newCode
     },
     Save(){
-      this.$http.post('/api/'+this.filedata.projectid+'/tree/'+this.filedata.filepath, { code: this.code })
+      this.$http.post('/api/'+this.filedata.projectid+'/tree/'+this.filedata.filepath, this.code)
         .then(Response => {
           console.log(Response.status)
         })
