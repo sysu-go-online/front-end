@@ -50,7 +50,9 @@ export default {
         return
       }
       that.ws = new WebSocket('ws://120.79.0.17/api/ws')
-      that.ws.send(command)
+      that.ws.onopen = function(evt) {
+        that.ws.send(command)
+      }
       that.ws.onmessage = function (evt) {
         that.xterm.write(evt.data)
       }

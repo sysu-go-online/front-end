@@ -35,20 +35,23 @@
         if (nodeData.type == 'dir'){
           return
         }
-        var data = nodeData
-        var filePath = nodeData.name
-        var parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
-        while (parentNode.name != null) {
-          data = parentNode
-          filePath = parentNode.name + '/' + filePath
-          parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
-        }
         var file = {
           name: nodeData.name,
-          filepath: filePath,
+          filepath: this.getFilePath(nodeData, this),
           nodeData: nodeData
         } 
         this.$emit('OpenFile', file)
+     },
+     getFilePath: function(nodeData, that) {
+        var data = nodeData
+        var filePath = nodeData.name
+        var parentNode = that.$utilHelper.getNode(that.treeData,data.id).parentNode
+        while (parentNode.name != null) {
+          data = parentNode
+          filePath = parentNode.name + '/' + filePath
+          parentNode = that.$utilHelper.getNode(that.treeData,data.id).parentNode
+        }
+        return filePath
      },
       //node 树节点，包含data对象(这是它的一个属性)
       //data 树节点数据对象
@@ -70,7 +73,11 @@
               this.runParam.parentNode = parentNode
               this.runParam.data = data
               this.runParam.nodeData = nodeData
-              this.$emit('DelNode',parentNode,data,this.CanDelNext)
+              
+              var filepath = this.getFilePath(data, this)
+              var isSelectedNode = false
+              if(data.id == this.selectedNode.id) { isSelectedNode = true }
+              this.$emit('DelNode',filepath, isSelectedNode, this.CanDelNext)
             },
             //保存节点
             SaveEdit:(nodeData)=> {
@@ -79,7 +86,14 @@
               this.runParam.parentNode = parentNode
               this.runParam.data = data
               this.runParam.nodeData = nodeData
-              this.$emit('SaveEdit',parentNode,data,this.CanSaveNext)
+
+              var fileName = data.name
+              var filePath = this.getFilePath(data, this)
+              var isSelectedNode = false
+              var isDir = false
+              if(data.id == this.selectedNode.id) { isSelectedNode = true }
+              if(data.type === 'dir') { isDir = true }
+              this.$emit('SaveEdit',fileName, filePath, isSelectedNode, isDir, this.CanSaveNext)
             }
           }
         })

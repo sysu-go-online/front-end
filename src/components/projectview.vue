@@ -25,27 +25,27 @@
             )
         },
         methods: {
-            SaveEdit: function (parentNode,data,next) {
-                var data = parentNode
-                var filePath = parentNode.name + '/' + data.name
-                var parentNode = this.$utilHelper.getNode(this.tableTree, data.id).parentNode
-                while (parentNode.name != null) {
-                    data = parentNode
-                    filePath = parentNode.name + '/' + filePath
-                    parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
-                }
-                this.$http.put('/api/'+ this.projectId + '/tree/' + this.currentFiledata.filepath)
-                      .then(Response => {
-                          console.log(Response.status)
-                      })
+            SaveEdit: function (fileName, filePath, isSelectedNode, isDir, next) {
+                var that = this
+                this.$http.put('/api/'+ this.projectId + '/tree/' + filePath,
+                    {
+                      'dir': isDir
+                    }).then(Response => {
+                        console.log(Response.status)
+                        if (isSelectedNode) {
+                            that.currentFiledata.name = fileName
+                            that.currentFiledata.filepath = filePath
+                            that.$emit('openfile', that.currentFiledata)
+                        }
+                    })
                 next(true, 0)
             },
-            DelNode: function (parentNode,data,next) {
-                this.$http.delete('/api/'+ this.projectId + '/tree/' + this.currentFiledata.filepath)
+            DelNode: function (filePath, isSelectedNode, next) {
+                this.$http.delete('/api/'+ this.projectId + '/tree/' + filePath)
                       .then(Response => {
                           console.log(Response.status)
                       })
-                if (this.currentFiledata.nodeData.id == data.id) {
+                if (isSelectedNode) {
                     this.currentFiledata.name = ''
                     this.currentFiledata.filepath = ''
                     this.$emit('openfile', this.currentFiledata)
