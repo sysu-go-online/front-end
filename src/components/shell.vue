@@ -69,7 +69,7 @@ export default {
         !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
 
       if (ev.keyCode == 13) {
-        that.term.write('/r/n')  
+        that.term.write('\r\n')  
         that.terminalFlow(that.command, that)
       } else if (ev.keyCode == 8) {
         // Do not delete the prompt
