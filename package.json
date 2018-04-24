@@ -12,7 +12,7 @@
     "element-ui": "^2.3.4",
     "vue": "^2.5.16",
     "vue-multiselect": "^2.1.0",
-    "xterm": "^3.2.0"
+    "xterm": "^3.3.0"
   },
   "devDependencies": {
     "autoprefixer": "^8.2.0",
@@ -45,6 +45,6 @@
     "webpack-cli": "^2.0.13",
     "webpack-dev-server": "^3.1.1",
     "webpack-merge": "^4.1.2",
-    "xterm": "^3.2.0"
+    "xterm": "^3.3.0"
   }
 }
