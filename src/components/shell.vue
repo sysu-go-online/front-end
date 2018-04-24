@@ -6,6 +6,7 @@
 <script>
 /* eslint-disable */
 import { Terminal } from 'xterm'
+import * as fit from 'xterm/lib/addons/fit/fit';
 import 'xterm/dist/xterm.css'
 import 'xterm/dist/xterm.js'
 import Vue from 'vue'
@@ -22,15 +23,15 @@ export default {
   },
   methods: {
     Xterm: function() {
+      this.$terminal.applyAddon(fit);
       var term = new this.$terminal({
-        cursorBlink: true,
-        cols: 100,
-        rows: 24
+        cursorBlink: true
       })
       term.open(this.$refs.xterm)
       if (term._initialized) {
         return
       }
+      term.fit()
       term._initialized = true
       var shellprompt = '$ '
 
@@ -67,9 +68,6 @@ export default {
     var that = this
     this.term = this.Xterm()
   　this.term.on('key', function(key, ev) {
-      var printable =
-        !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
-
       if (ev.keyCode == 13) {
         that.term.write('\r\n')  
         that.terminalFlow(that.command, that)
@@ -79,15 +77,19 @@ export default {
           that.command = that.command.slice(0, that.command.length)
           that.term.write('\b \b')
         }
-      } else if (printable) {
-        that.command += key
-        that.term.write(key)
       }
     })
 
     this.term.on('paste', function(data, ev) {
-        that.command += data
+      that.command += data
       that.term.write(data)
+    })
+    this.term.on('data', function(str) {
+      console.log(str)
+      if (str != '') {
+        that.command += str
+        that.term.write(str)
+      }
     })
   }
 }
@@ -97,9 +99,7 @@ export default {
 .my_terminal {
   width: 100%;
   box-sizing: border-box;
-  overflow: auto;
-}
-.xterm .xterm-viewport {
-  overflow: auto !important;
+  overflow: hidden;
+  ime-mode: active;
 }
 </style>
