@@ -69,7 +69,9 @@ export default {
     this.term = this.Xterm()
   　this.term.on('key', function(key, ev) {
       if (ev.keyCode == 67) {
-        that.ws.close()
+        if(that.ws != null) {
+          that.ws.close()
+        }
       }
       if (ev.keyCode == 13) {
         if (that.command.length == 0) {
@@ -81,8 +83,14 @@ export default {
       } else if (ev.keyCode == 8) {
         // Do not delete the prompt
         if (that.ws === null && that.term.buffer.x > 2) {
-          that.command = that.command.slice(0, that.command.length - 1)
-          that.term.write('\b \b')
+          var len = that.command.length
+          if(that.command.charCodeAt(len - 1) > 255) {
+            that.term.write('\b \b')
+            that.term.write('\b \b')
+          } else {
+            that.term.write('\b \b')
+          }
+          that.command = that.command.slice(0, len - 1)
         }
       }
     })
@@ -92,11 +100,18 @@ export default {
       that.term.write(data)
     })
     this.term.on('data', function(str) {
-      console.log(str)
-      if (str != '') {
-        that.command += str
+      var pat = /.*/
+      //禁止添加上下左右移动字符
+      if(str == '[A' || str == '[B' || str == '[C' || str == '[D') {
         that.term.write(str)
+        return
       }
+      //禁止输入其他非法字符
+      if(pat.test(str) || str == '\n') {
+        return
+      }
+      that.term.write(str)
+      that.command += str
     })
   }
 }
