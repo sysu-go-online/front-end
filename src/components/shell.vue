@@ -41,7 +41,7 @@ export default {
         term.write('\r\n' + shellprompt)
       }
 
-      term.writeln('Welcome to go-online!')
+      term.writeln('欢迎来到 go-online!')
       term.writeln('Type some keys and commands to play around.')
       term.writeln('')
       term.prompt()
@@ -52,7 +52,7 @@ export default {
       if (that.ws != null) {
         return
       }
-      that.ws = new WebSocket('ws://localhost/api/ws')
+      that.ws = new WebSocket('ws://120.79.0.17/api/ws')
       that.ws.onopen = function(evt) {
         that.ws.send(command)
       }
