@@ -5,10 +5,11 @@
 
 <script>
 /* eslint-disable */
+import Vue from 'vue'
 import { Terminal } from 'xterm'
 import 'xterm/dist/xterm.css'
 import 'xterm/dist/xterm.js'
-import Vue from 'vue'
+import * as fit from 'xterm/lib/addons/fit/fit.js'
 
 Object.defineProperty(Vue.prototype, '$terminal', { value: Terminal })
 export default {
@@ -22,6 +23,8 @@ export default {
   },
   methods: {
     Xterm: function() {
+      Terminal.applyAddon(fit)
+      console.log(123)
       var term = new this.$terminal({
         cursorBlink: true,
         cols: 100,
@@ -31,6 +34,7 @@ export default {
       if (term._initialized) {
         return
       }
+      term.fit()
       term._initialized = true
       var shellprompt = '$ '
 
@@ -38,23 +42,23 @@ export default {
         term.write('\r\n' + shellprompt)
       }
 
-      term.writeln('Welcome to xterm.js')
+      term.writeln('Welcome to go-online!')
       term.writeln('Type some keys and commands to play around.')
       term.writeln('')
       term.prompt()
 
       return term
     },
-    terminalFlow: function(command,that) {
+    terminalFlow: function(command, that) {
       if (that.ws != null) {
         return
       }
-      that.ws = new WebSocket('ws://120.79.0.17/api/ws')
+      that.ws = new WebSocket('ws://localhost:8000/ws')
       that.ws.onopen = function(evt) {
         that.ws.send(command)
       }
       that.ws.onmessage = function (evt) {
-        that.xterm.write(evt.data)
+        that.term.write(evt.data + "\r\n")
       }
       that.ws.onclose = function(evt) {
         that.command = ''
@@ -71,7 +75,7 @@ export default {
         !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
 
       if (ev.keyCode == 13) {
-        that.term.write('\r\n')  
+        that.term.write('\r\n')
         that.terminalFlow(that.command, that)
       } else if (ev.keyCode == 8) {
         // Do not delete the prompt
@@ -99,7 +103,7 @@ export default {
   box-sizing: border-box;
   overflow: auto;
 }
-.xterm .xterm-viewport {
+/* .xterm .xterm-viewport {
   overflow: auto !important;
-}
+} */
 </style>
