@@ -73,16 +73,9 @@ export default {
     var that = this
     this.term = this.Xterm()
   　this.term.on('key', function(key, ev) {
-<<<<<<< HEAD
-=======
-      var printable =
-        !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
-
-      console.log(ev.keyCode)
       if (ev.keyCode == 67) {
         that.ws.close()
       }
->>>>>>> 445a305de339d4bc5ca9f8f2385abe03b694475d
       if (ev.keyCode == 13) {
         if (that.command.length == 0) {
           that.term.prompt()
@@ -118,15 +111,6 @@ export default {
 .my_terminal {
   /* width: 100%; */
   box-sizing: border-box;
-<<<<<<< HEAD
   overflow: hidden;
-  ime-mode: active;
 }
-=======
-  overflow: auto;
-}
-/* .xterm .xterm-viewport {
-  overflow: auto !important;
-} */
->>>>>>> 445a305de339d4bc5ca9f8f2385abe03b694475d
 </style>
