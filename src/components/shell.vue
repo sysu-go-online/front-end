@@ -24,7 +24,6 @@ export default {
   methods: {
     Xterm: function() {
       Terminal.applyAddon(fit)
-      console.log(123)
       var term = new this.$terminal({
         cursorBlink: true,
         cols: 100,
@@ -74,12 +73,17 @@ export default {
       var printable =
         !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
 
+      console.log(ev.keyCode)
       if (ev.keyCode == 67) {
         that.ws.close()
       }
       if (ev.keyCode == 13) {
-        that.term.write('\r\n')
-        that.terminalFlow(that.command, that)
+        if (that.command.length == 0) {
+          that.term.prompt()
+        } else {
+          that.term.write('\r\n')
+          that.terminalFlow(that.command, that)
+        }
       } else if (ev.keyCode == 8) {
         // Do not delete the prompt
         if (that.ws === null && that.term.buffer.x > 2) {
@@ -93,7 +97,7 @@ export default {
     })
 
     this.term.on('paste', function(data, ev) {
-        that.command += data
+      that.command += data
       that.term.write(data)
     })
   }
