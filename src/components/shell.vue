@@ -24,11 +24,7 @@ export default {
   },
   methods: {
     Xterm: function() {
-<<<<<<< HEAD
       this.$terminal.applyAddon(fit);
-=======
-      Terminal.applyAddon(fit)
->>>>>>> 445a305de339d4bc5ca9f8f2385abe03b694475d
       var term = new this.$terminal({
         cursorBlink: true
       })
