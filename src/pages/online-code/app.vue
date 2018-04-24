@@ -7,8 +7,8 @@
         <div class="menu-icon"><Icon v-bind:type="shellIcon" size="32" @click.native="showShell"></Icon></div>
       </div>
       <project-view @openfile="openFile" v-bind:style="{width: projectViewWidth}"></project-view>
-      <div id="command_line" v-bind:style="{left: commandLineLeft}">
-        <editor :fileData="this.fileData" v-bind:style="{height: editorHeight}"></editor>
+      <div id="command_line" v-bind:style="{left: commandLineLeft, width: commandLineWidth}">
+        <editor :fileData="this.fileData" v-bind:style="{height: editorHeight, width: editorWidth}"></editor>
         <shell v-bind:style="{height: shellHeight}"></shell>
       </div>
     </div>
@@ -36,9 +36,11 @@ export default {
       commandLineLeft: '250px',
       editorHeight: 'calc(100% - 200px)',
       shellHeight: '190px',
+      editorWidth: '100%',
       projectViewIcon: 'ios-copy',
       shellIcon: 'ios-albums',
       fileData: {},
+      commandLineWidth: 'calc(100% - 250px)'
     }
   },
   methods: {
@@ -46,10 +48,12 @@ export default {
       if (this.projectViewWidth == '200px') {
         this.projectViewWidth = '0'
         this.commandLineLeft = '50px'
+        this.commandLineWidth = 'calc(100% - 50px)'
         this.projectViewIcon = 'ios-copy-outline'
       } else {
         this.projectViewWidth = '200px'
         this.commandLineLeft = '250px'
+        this.commandLineWidth = 'calc(100% - 250px)'
         this.projectViewIcon = 'ios-copy'
       }
     },
@@ -122,7 +126,6 @@ html, body{
     position: absolute;
     left: 250px;
     height: 100%;
-    width: 100%;
     box-sizing: border-box;
     display: inline-block;
 }

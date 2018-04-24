@@ -68,7 +68,6 @@ export default {
       console.log('the editor is focus!', cm)
     },
     onCmCodeChange (newCode) {
-      console.log('this is new code', newCode)
       this.code = newCode
     },
     Save(){
@@ -79,6 +78,7 @@ export default {
     },
     getFile: function(val, that) {
       if (val.name == '') {
+        that.code = ''
         return
       }
       that.$http.get('/api/'+val.projectid+'/tree/'+val.filepath)

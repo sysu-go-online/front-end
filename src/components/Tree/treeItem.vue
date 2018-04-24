@@ -39,7 +39,8 @@
       methods:{
         OpenEdit(){
           this.node.edit_status = 1
-          this.node.isAdd = false
+          this.node.canClick = false
+          this.$emit('disbleClickExpand')
         },
         Append(){
           //添加节点事件
@@ -50,6 +51,7 @@
           this.$emit('SaveEdit',this.nodeData)
         },
         Delete(){
+          this.node.canClick = false
           this.$emit('Delete',this.nodeData)
         }
       },

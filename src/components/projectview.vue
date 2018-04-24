@@ -38,7 +38,7 @@
                             that.$emit('openfile', that.currentFiledata)
                         }
                     })
-                next(true, 0)
+                next()
             },
             DelNode: function (filePath, isSelectedNode, next) {
                 this.$http.delete('/api/'+ this.projectId + '/tree/' + filePath)
@@ -50,7 +50,7 @@
                     this.currentFiledata.filepath = ''
                     this.$emit('openfile', this.currentFiledata)
                 }
-                next(true, 0)
+                next()
             },
             OpenFile: function (file) {
                 this.currentFiledata = file

@@ -24,7 +24,7 @@ export default {
     Xterm: function() {
       var term = new this.$terminal({
         cursorBlink: true,
-        cols: 43,
+        cols: 100,
         rows: 24
       })
       term.open(this.$refs.xterm)
@@ -96,8 +96,10 @@ export default {
 <style>
 .my_terminal {
   width: 100%;
-  height: 190px;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: auto;
+}
+.xterm .xterm-viewport {
+  overflow: auto !important;
 }
 </style>

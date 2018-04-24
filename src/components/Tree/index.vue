@@ -12,7 +12,7 @@
         @node-click="handleNodeClick"
         ref="tree"
         node-key="id"
-        :expand-on-click-node="true"
+        :expand-on-click-node="this.clickExpand"
         :render-content="renderContent">
       </el-tree>
     </div>
@@ -26,11 +26,20 @@
       return {
         treeData:this.value,
         runParam:{},
-        selectedNode: {}
+        selectedNode: {},
+        clickExpand: true
       }
     },
     methods: {
       handleNodeClick(nodeData, node, store) {
+        if(!this.clickExpand) {
+          return
+        }
+
+        if(nodeData.canClick != undefined && !nodeData.canClick){
+          return
+        }
+
         this.selectedNode = node
         if (nodeData.type == 'dir'){
           return
@@ -39,7 +48,9 @@
           name: nodeData.name,
           filepath: this.getFilePath(nodeData, this),
           nodeData: nodeData
-        } 
+        }
+        console.log(nodeData)
+
         this.$emit('OpenFile', file)
      },
      getFilePath: function(nodeData, that) {
@@ -68,16 +79,20 @@
             },
             //删除节点
             Delete: (nodeData) => {
+              if(!this.clickExpand) {
+                return
+              }
+
               //递归查找父节点
               var parentNode = this.$utilHelper.getNode(this.treeData,data.id).parentNode
               this.runParam.parentNode = parentNode
               this.runParam.data = data
               this.runParam.nodeData = nodeData
               
-              var filepath = this.getFilePath(data, this)
+              var filePath = this.getFilePath(data, this)
               var isSelectedNode = false
-              if(data.id == this.selectedNode.id) { isSelectedNode = true }
-              this.$emit('DelNode',filepath, isSelectedNode, this.CanDelNext)
+              if(this.selectedNode.data != undefined && data.id == this.selectedNode.data.id) { isSelectedNode = true }
+              this.$emit('DelNode',filePath, isSelectedNode, this.CanDelNext)
             },
             //保存节点
             SaveEdit:(nodeData)=> {
@@ -91,47 +106,41 @@
               var filePath = this.getFilePath(data, this)
               var isSelectedNode = false
               var isDir = false
-              if(data.id == this.selectedNode.id) { isSelectedNode = true }
+              if(this.selectedNode.data != undefined && data.id == this.selectedNode.data.id) { isSelectedNode = true }
               if(data.type === 'dir') { isDir = true }
               this.$emit('SaveEdit',fileName, filePath, isSelectedNode, isDir, this.CanSaveNext)
+            },
+            disbleClickExpand: () => {
+              this.clickExpand = false
             }
           }
         })
       },
-      CanSaveNext(isNext,nodeId){
+      CanSaveNext(){
         let parentNode = this.runParam.parentNode
         let nodeData = this.runParam.nodeData
         let data = this.runParam.data
-        if(isNext){
-          parentNode.children.forEach((v,i)=>{
-            if(v.id == data.id){
-              data.edit_status = 0
-              parentNode.children.splice(i,1,data)
-            }
-          })
-        }else{
-          if(!data.isAdd){
-            parentNode.children.forEach((v,i)=>{
-              if(v.id == nodeData.id){
-                data.name = nodeData.name
-                parentNode.children.splice(i,1,data)
-              }
-            })
+        parentNode.children.forEach((v,i)=>{
+          if(v.id == data.id){
+            data.edit_status = 0
+            data.canClick = true
+            parentNode.children.splice(i,1,data)
           }
-        }
+        })
         this.runParam = {}
+        this.clickExpand = true
       },
-      CanDelNext(isNext){
+      CanDelNext(){
         let parentNode = this.runParam.parentNode
         let nodeData = this.runParam.nodeData
         let data = this.runParam.data
-        if(isNext){
-          parentNode.children.forEach((v,i)=>{
-            if(v.id == data.id){
-              parentNode.children.splice(i,1)
-            }
-          })
-        }
+        console.log(parentNode)
+        console.log(data)
+        parentNode.children.forEach((v,i) => {
+          if(v.id == data.id){
+            parentNode.children.splice(i,1)
+          }
+        })
         this.runParam = {}
       },
       appendFile: function (){
@@ -142,7 +151,8 @@
           id: this.$utilHelper.generateUUID(),
           name: '请输入文件名称',
           edit_status: 1,
-          type: 'file'
+          type: 'file',
+          canClick: false
        }, this.selectedNode)
       },
       appendDir: function (){
@@ -154,6 +164,7 @@
           name: '请输入文件夹名称',
           edit_status: 1,
           type: 'dir',
+          canClick: false,
           children: []
        }, this.selectedNode)
       }
