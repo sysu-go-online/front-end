@@ -53,12 +53,12 @@ export default {
       if (that.ws != null) {
         return
       }
-      that.ws = new WebSocket('ws://localhost:8000/ws')
+      that.ws = new WebSocket('ws://localhost/api/ws')
       that.ws.onopen = function(evt) {
         that.ws.send(command)
       }
       that.ws.onmessage = function (evt) {
-        that.term.write(evt.data + "\r\n")
+        that.term.writeln(evt.data)
       }
       that.ws.onclose = function(evt) {
         that.command = ''
@@ -74,13 +74,16 @@ export default {
       var printable =
         !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
 
+      if (ev.keyCode == 67) {
+        that.ws.close()
+      }
       if (ev.keyCode == 13) {
         that.term.write('\r\n')
         that.terminalFlow(that.command, that)
       } else if (ev.keyCode == 8) {
         // Do not delete the prompt
         if (that.ws === null && that.term.buffer.x > 2) {
-          that.command = that.command.slice(0, that.command.length)
+          that.command = that.command.slice(0, that.command.length - 1)
           that.term.write('\b \b')
         }
       } else if (printable) {
@@ -99,7 +102,7 @@ export default {
 
 <style>
 .my_terminal {
-  width: 100%;
+  /* width: 100%; */
   box-sizing: border-box;
   overflow: auto;
 }
