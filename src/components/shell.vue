@@ -7,7 +7,6 @@
 /* eslint-disable */
 import Vue from 'vue'
 import { Terminal } from 'xterm'
-import * as fit from 'xterm/lib/addons/fit/fit';
 import 'xterm/dist/xterm.css'
 import 'xterm/dist/xterm.js'
 import * as fit from 'xterm/lib/addons/fit/fit.js'
