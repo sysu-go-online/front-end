@@ -48,6 +48,8 @@ export default {
     },
     terminalFlow: function(command, that) {
       if (that.ws != null) {
+        // 如果已经存在ws连接，则直接往已有的ws中写入内容
+        that.ws.send(command)
         return
       }
       that.ws = new WebSocket('ws://120.79.0.17/api/ws')
@@ -79,6 +81,7 @@ export default {
         } else {
           that.term.write('\r\n')
           that.terminalFlow(that.command, that)
+          that.command = ''
         }
       } else if (ev.keyCode == 8) {
         // Do not delete the prompt
