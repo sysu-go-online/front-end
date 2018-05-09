@@ -18,7 +18,8 @@ export default {
     return {
       term: null,
       ws: null,
-      command: ''
+      command: '',
+      key: null // 获取换行字符对应的字符串; 验证，xterm.js先触发'key'事件，再触发'data'事件
     }
   },
   methods: {
@@ -57,11 +58,12 @@ export default {
         that.ws.send(command)
       }
       that.ws.onmessage = function (evt) {
-        that.term.writeln(evt.data)
+        that.term.write(evt.data)
       }
       that.ws.onclose = function(evt) {
-        that.command = ''
-        that.term.prompt()
+        // \r 回车符，回到一行开头
+        // \n 换行符，另起一行
+        that.term.write('\r' + '$ ')
         that.ws = null
       }
     }
@@ -76,6 +78,8 @@ export default {
         }
       }
       if (ev.keyCode == 13) {
+        // 先触发'key'事件，再触发'data'事件，所以换行符必然会被写入command,采用该种方式避免
+        that.key = key
         if (that.command.length == 0) {
           that.term.prompt()
         } else {
@@ -110,9 +114,10 @@ export default {
         return
       }
       //禁止输入其他非法字符
-      if(pat.test(str) || str == '\n') {
+      if(pat.test(str) || str == '\n' || str == '\r' || str == that.key) {
         return
       }
+      console.log(str)
       that.term.write(str)
       that.command += str
     })

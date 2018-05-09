@@ -1,17 +1,12 @@
 import Vue from 'vue'
 import App from './app.vue'
 import VueResource from 'vue-resource'
-import {Input} from 'element-ui'
-import Tree from '../../components/Tree/tree/index.js'
 import iView from 'iview'
 import util from '../../util/util'
 import log from '../../util/logger'
 import 'element-ui/lib/theme-chalk/index.css'
 import 'iview/dist/styles/iview.css'
 import '../../assets/icon/iconfont.css'
-//单独引用element-ui相关组件
-Vue.use(Input)
-Vue.use(Tree)
 //引用iview
 Vue.use(iView)
 //引入vue-resource
