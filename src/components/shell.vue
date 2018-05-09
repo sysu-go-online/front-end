@@ -37,7 +37,7 @@ export default {
       var shellprompt = '$ '
 
       term.prompt = function() {
-        term.write('\r\n' + shellprompt)
+        term.write(shellprompt)
       }
 
       term.writeln('欢迎来到 go-online!')
@@ -58,7 +58,7 @@ export default {
         that.ws.send(command)
       }
       that.ws.onmessage = function (evt) {
-        that.term.write(evt.data)
+        that.term.write(evt.data.split('\n').join('\r\n'))
       }
       that.ws.onclose = function(evt) {
         // \r 回车符，回到一行开头
