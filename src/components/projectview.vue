@@ -19,30 +19,32 @@
             Tree
         },
         created: function () {
-            // this.$http.get('http://120.79.0.17/api/1','GET').then(
-            //     Response => {
-            //         var tree = {
-            //             name: 'app',
-            //             id: this.$utilHelper.generateUUID(),
-            //             type: 'dir',
-            //             root: true,
-            //             isSelected: false,
-            //             children: testData
-            //         }
-            //         this.treeData = this.$utilHelper.formatChildren(data)
-            //     },
-            // )
-            var tree = {
-                name: 'app',
-                id: this.$utilHelper.generateUUID(),
-                type: 'dir',
-                root: true,
-                isSelected: false,
-                children: this.testData
-            }
-            this.$utilHelper.formatChildren(tree)
-            this.$utilHelper.treeSort(tree)
-            this.treeData = tree
+            this.$http.get('http://120.79.0.17/api/1','GET').then(
+                Response => {
+                    var tree = {
+                        name: 'app',
+                        id: this.$utilHelper.generateUUID(),
+                        type: 'dir',
+                        root: true,
+                        isSelected: false,
+                        children: testData
+                    }
+                    this.$utilHelper.formatChildren(tree)
+                    this.$utilHelper.treeSort(tree)
+                    this.treeData = tree
+                },
+            )
+            // var tree = {
+            //     name: 'app',
+            //     id: this.$utilHelper.generateUUID(),
+            //     type: 'dir',
+            //     root: true,
+            //     isSelected: false,
+            //     children: this.testData
+            // }
+            // this.$utilHelper.formatChildren(tree)
+            // this.$utilHelper.treeSort(tree)
+            // this.treeData = tree
         },
         methods: {
             SaveEdit: function (fileName, filePath, isSelectedNode, isDir) {
