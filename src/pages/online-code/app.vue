@@ -11,8 +11,8 @@
           <project-view @openfile="openFile" v-bind:style="{width: projectViewWidth}"></project-view>
         </div>
         <div id="command_line" v-bind:style="{left: commandLineLeft, width: commandLineWidth}">
-          <editor :fileData="this.fileData" v-bind:style="{height: editorHeight, width: editorWidth}"></editor>
-          <shell v-bind:style="{height: shellHeight}" :height="shellHeight"></shell>
+          <editor :fileData="this.fileData" v-bind:style="{height: editorHeight}"></editor>
+          <shell v-bind:style="{height: shellHeight}" :height="shellHeight" :width="commandLineWidth"></shell>
         </div>
       </div>
     </div>
@@ -40,8 +40,6 @@ export default {
       commandLineLeft: '200px',
       editorHeight: 'calc(100% - 200px)',
       shellHeight: '200px',
-      editorWidth: '100%',
-      projectViewIcon: 'ios-copy',
       fileData: {},
       commandLineWidth: 'calc(100% - 200px)',
       
@@ -143,14 +141,14 @@ export default {
 
       // 以上位置或者在其他位置，但是onmousedown
       var reg = /\d+/g
-      var pos
+      // 拖动改变project-view和command_line
       if (this.mouseState === 'down' && this.onLeftLine) {
         var sub = X - this.leftResizeLineX
         this.leftResizeLineX = X
         this.projectViewWidth = (parseInt(this.projectViewWidth.match(reg)[0]) + sub) + 'px'
         this.commandLineWidth = 'calc(100% - '+ this.projectViewWidth + ')'
         console.log(this.commandLineWidth)
-        // 设置part2 left值
+        // 设置command_line left值
         this.commandLineLeft = this.projectViewWidth
 
         if (parseInt(this.projectViewWidth.match(reg)[0]) < 100) {
@@ -158,6 +156,7 @@ export default {
           this.commandLineLeft = '0'
           this.commandLineWidth = '100%'
         }
+      // 拖动改变editor和shell
       } else if (this.mouseState === 'down' && this.onRightLine) {
         // 修改div大小
         sub = Y - this.rightResizeLineY
@@ -227,20 +226,6 @@ html, body{
     width: 100%;
     height: calc(100% - 35px);
     background-color: black;
-}
-#vertialLine {
-    position: absolute;
-    left: 200px;
-    height: 100%;
-    width: 2px;
-    background-color: white;
-    cursor: col-resize;
-}
-#horezonLine {
-    height: 2px;
-    width: 100%;
-    background-color: white;
-    cursor: row-resize;
 }
 .icon {
   display: inline-block;
