@@ -4,10 +4,10 @@
       <span v-if="file != ''" class="file">
         <span class="file-name">{{file}}</span>
         <span class="span_icon">
-          <Icon color="#bebebe" type="close" size="10" @click.native="closeFile"></Icon>
+          <svg class="icon icon-search-close" @click="closeFile"><use xlink:href="#icon-search-close"></use></svg>
        </span>
       </span>
-      <span id="save"><Button type="success" size="small" @click.native="Save">Save</Button></span>
+      <span id="save"><input type="button" value="保存" id="save-button" @click="Save"></span>
     </div>
       <div id="edit-area">
           <codemirror v-model="code"
@@ -122,6 +122,19 @@ export default {
   height: 32px;
   width: 100%;
   background: rgba(17, 17, 17, 0.4);
+}
+#save-button {
+  color: white;
+  padding: 2px 5px;
+  background-color: #009A61;
+  border: none;
+  border-radius: 5px;
+  outline: none;
+}
+.icon-search-close {
+  width: 9px;
+  height: 9px;
+  color: rgba(219, 218, 218, 0.4)
 }
 .func_button{
     background: rgba(17, 17, 17, 0.4);

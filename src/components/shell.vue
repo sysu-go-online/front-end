@@ -37,7 +37,7 @@ export default {
       var shellprompt = '$ '
 
       term.prompt = function() {
-        term.write(shellprompt)
+        term.write('\r\n' +shellprompt)
       }
 
       term.writeln('欢迎来到 go-online!')
@@ -63,7 +63,7 @@ export default {
       that.ws.onclose = function(evt) {
         // \r 回车符，回到一行开头
         // \n 换行符，另起一行
-        that.term.write('\r' + '$ ')
+        that.term.write('$ ')
         that.ws = null
       }
     }

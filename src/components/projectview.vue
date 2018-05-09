@@ -21,14 +21,7 @@
         created: function () {
             this.$http.get('http://120.79.0.17/api/1','GET').then(
                 Response => {
-                    var tree = {
-                        name: 'app',
-                        id: this.$utilHelper.generateUUID(),
-                        type: 'dir',
-                        root: true,
-                        isSelected: false,
-                        children: testData
-                    }
+                    var tree = Response.data
                     this.$utilHelper.formatChildren(tree)
                     this.$utilHelper.treeSort(tree)
                     this.treeData = tree

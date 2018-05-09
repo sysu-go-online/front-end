@@ -3,8 +3,8 @@
     <heads></heads>
     <div id="content">
       <div id="menu">
-        <div class="menu-icon"><Icon v-bind:type="projectViewIcon" size="40" @click.native="showProjectView"></Icon></div>
-        <div class="menu-icon"><Icon v-bind:type="shellIcon" size="32" @click.native="showShell"></Icon></div>
+        <div class="menu-icon"><svg class="icon icon-file" @click="showProjectView"><use xlink:href="#icon-file"></use></svg></div>
+        <div class="menu-icon"><svg class="icon icon-terminal" @click="showShell"><use xlink:href="#icon-terminal"></use></svg></div>
       </div>
       <project-view @openfile="openFile" v-bind:style="{width: projectViewWidth}"></project-view>
       <div id="command_line" v-bind:style="{left: commandLineLeft, width: commandLineWidth}">
@@ -104,6 +104,10 @@ html, body{
   color:#009A61;
   padding: 10px;
 }
+.icon-file, .icon-terminal {
+  width: 32px !important;
+  height: 32px !important;
+}
 #home{
   height: 100%;
   width: 100%;
@@ -134,5 +138,13 @@ html, body{
     width: 100%;
     background-color: white;
     cursor: row-resize;
+}
+.icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
 }
 </style>

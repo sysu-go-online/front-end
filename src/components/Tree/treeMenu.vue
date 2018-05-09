@@ -5,7 +5,7 @@
         <svg v-if="this.treeNode.type=='dir'" :style="this.arrow_rotate" class="icon icon-play3"><use xlink:href="#icon-play3"></use></svg>
         <svg :class="iconType"><use :xlink:href="iconName"></use></svg>
         <span v-if="!this.edit_status">{{ this.treeNode.name }}</span>
-        <input v-if="this.edit_status" class="node_input" v-model="newName" @keyup.enter="onEnter"/>
+        <input v-if="this.edit_status" class="node_input" v-model="newName" @keyup.enter="onEnter" autofocus="autofocus"/>
       </div>
       <div v-if="!this.treeNode.root" class="span_func_icon" :style="indent">
         <svg class="icon icon-modify" @click="change_node"><use xlink:href="#icon-modify"></use></svg>
@@ -150,8 +150,9 @@ export default {
   background-color: rgb(228, 228, 228);
 }
 .node_input {
-  width: 50px;
-  background-color: rgb(99, 99, 102);
+  width: 80px;
+  background-color: rgb(228, 228, 228);
+  border: #009A61;
 }
 .node_style:hover .span_func_icon {
   display: inline-block;
@@ -167,14 +168,6 @@ export default {
 .lable_class {
   display:inline-block;
 }
-.icon {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  stroke-width: 0;
-  stroke: currentColor;
-  fill: currentColor;
-}
 .icon-play3 {
   width: 10px;
   height: 10px;
@@ -184,5 +177,4 @@ export default {
   width: 14px;
   height: 14px;
 }
-
 </style>
