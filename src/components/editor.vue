@@ -9,14 +9,14 @@
       </span>
       <span id="save"><input type="button" value="保存" id="save-button" @click="Save"></span>
     </div>
-      <div id="edit-area">
-          <codemirror v-model="code"
-                :options="cmOptions"
-                @ready="onCmReady"
-                @focus="onCmFocus"
-                @input="onCmCodeChange">
-          </codemirror>
-      </div>
+    <div id="edit-area">
+        <codemirror v-model="code"
+              :options="cmOptions"
+              @ready="onCmReady"
+              @focus="onCmFocus"
+              @input="onCmCodeChange">
+        </codemirror>
+    </div>
   </div>
 </template>
 

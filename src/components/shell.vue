@@ -1,5 +1,5 @@
 <template>
-  <div class="my_terminal" ref="xterm">
+  <div id="shell" class="my_terminal" ref="xterm">
   </div>
 </template>
 
@@ -22,6 +22,7 @@ export default {
       key: null // 获取换行字符对应的字符串; 验证，xterm.js先触发'key'事件，再触发'data'事件
     }
   },
+  props:['height'],
   methods: {
     Xterm: function() {
       this.$terminal.applyAddon(fit);
@@ -121,11 +122,22 @@ export default {
       that.term.write(str)
       that.command += str
     })
+  },
+  watch: {
+    height: {
+      handler: function (val, oldval) {
+        this.term.fit()
+      },
+      deep: true
+    }
   }
 }
 </script>
 
 <style>
+#shell {
+  width: 100%;
+}
 .my_terminal {
   /* width: 100%; */
   box-sizing: border-box;

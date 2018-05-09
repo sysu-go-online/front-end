@@ -185,8 +185,8 @@ export default {
   position: relative;
   margin-top: 10px;
   height: 30px;
-  width: 100%;
-  left: 70%;
+  width: 60px;
+  float: right;
 }
 #file_data {
   height: calc(100% - 40px);

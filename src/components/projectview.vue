@@ -76,8 +76,7 @@
 
 <style>
 #project_view{
-    position: absolute;
-    left: 50px;
+    width: 100%;
     height: 100%;
     background: #292929;
     box-sizing: border-box;
