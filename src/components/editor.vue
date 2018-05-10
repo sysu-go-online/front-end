@@ -85,7 +85,8 @@ export default {
         .then( Response => {
           that.code = Response.data
         })
-    }
+    },
+    closeFile: function() {}
   },
   watch: {
     fileData:{
