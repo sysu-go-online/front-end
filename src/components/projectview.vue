@@ -21,7 +21,19 @@
         created: function () {
             this.$http.get('http://120.79.0.17/api/1','GET').then(
                 Response => {
-                    var tree = Response.data
+                    // var tree = Response.data
+                    // this.$utilHelper.formatChildren(tree)
+                    // this.$utilHelper.treeSort(tree)
+                    // this.treeData = tree
+
+                    var tree = {
+                        name: 'app',
+                        id: this.projectId,
+                        type: 'dir',
+                        root: true,
+                        isSelected: false,
+                        children: Response.data
+                    }
                     this.$utilHelper.formatChildren(tree)
                     this.$utilHelper.treeSort(tree)
                     this.treeData = tree
@@ -42,6 +54,7 @@
         methods: {
             SaveEdit: function (fileName, filePath, isSelectedNode, isDir) {
                 var that = this
+                filePath = filePath.substring(4, filePath.length)
                 this.$http.put('/api/'+ this.projectId + '/tree/' + filePath,
                     {
                       'dir': isDir
@@ -55,6 +68,7 @@
                     })
             },
             DelNode: function (filePath, isSelectedNode) {
+                filePath = filePath.substring(4, filePath.length)
                 this.$http.delete('/api/'+ this.projectId + '/tree/' + filePath)
                       .then(Response => {
                           console.log(Response.status)
@@ -66,6 +80,7 @@
                 }
             },
             OpenFile: function (file) {
+                file.filepath = file.filepath.substring(4, file.filepath.length)
                 this.currentFiledata = file
                 this.currentFiledata['projectid'] = this.projectId
                 this.$emit('openfile', this.currentFiledata)
