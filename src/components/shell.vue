@@ -59,12 +59,10 @@ export default {
         that.ws.send(command)
       }
       that.ws.onmessage = function (evt) {
-        that.term.writeln(evt.data.replace(/\n/g, '\r\n'))
+        that.term.write(evt.data.replace(/\n/g, '\r\n'))
         // that.term.write(evt.data.split('\n').join('\r\n'))
       }
       that.ws.onclose = function(evt) {
-        // \r 回车符，回到一行开头
-        // \n 换行符，另起一行
         that.term.write('$ ')
         that.ws = null
       }
@@ -96,7 +94,7 @@ export default {
           }
           return
         }
-        
+
         // Delete
         if (ev.keyCode == 8) {
           // Do not delete the prompt
@@ -113,7 +111,11 @@ export default {
           return
         }
       } else {
-        // TODO: Send content according to the key code
+        if (that.ws.readyState == 1) {
+          // TODO: Send content according to the key code
+        } else if (that.ws.readyState == 0) {
+          // TODO: Store message when the ws is connecting and send message when the connection has been send
+        }
       }
       // if (ev.keyCode == 67) {
       //   if(that.ws != null) {
@@ -164,23 +166,13 @@ export default {
         // Add valid str
         that.command += str
         that.term.write(str)
-        return
       } else {
-        that.terminalFlow(key, that)
+        if (that.ws.readyState == 1) {
+          that.terminalFlow(str, that)
+        } else if (that.ws.readyState == 0) {
+          // TODO: Store message when the ws is connecting and send message when the connection has been send
+        }
       }
-      // var pat = /.*/
-      // //禁止添加上下左右移动字符
-      // if(str == '[A' || str == '[B' || str == '[C' || str == '[D') {
-      //   that.term.write(str)
-      //   return
-      // }
-      // //禁止输入其他非法字符
-      // if(pat.test(str) || str == '\n' || str == '\r' || str == that.key) {
-      //   return
-      // }
-      // console.log(str)
-      // that.term.write(str)
-      // that.command += str
     })
   },
   watch: {
