@@ -8,6 +8,7 @@
     "build": "webpack --mode production --progress --config build/webpack.prod.conf.js"
   },
   "dependencies": {
+    "@xunlei/vue-context-menu": "^1.0.2",
     "codemirror": "^5.36.0",
     "vue": "^2.5.16",
     "vue-multiselect": "^2.1.0",

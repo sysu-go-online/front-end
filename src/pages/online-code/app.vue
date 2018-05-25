@@ -16,6 +16,15 @@
         </div>
       </div>
     </div>
+
+    <vue-context-menu class="right-menu" 
+      :target="contextMenuTarget" 
+      :show="contextMenuVisible" 
+      @update:show="(show) => contextMenuVisible = show">
+      <a href="javascript:;" @click="createFile">创建文件</a>
+      <a href="javascript:;" @click="createDir">创建文件夹</a>
+      <a href="javascript:;" @click="deleteMsg">删除</a>
+    </vue-context-menu>
   </div>
 </template>
 <script>
@@ -24,6 +33,7 @@ import Header from 'components/header'
 import Shell from 'components/shell'
 import Hint from 'components/hint'
 import Projectview from 'components/projectview'
+import { component as VueContextMenu } from '@xunlei/vue-context-menu'
 
 export default {
   name: 'Home',
@@ -32,7 +42,8 @@ export default {
     heads: Header,
     shell: Shell,
     hint: Hint,
-    'project-view': Projectview
+    'project-view': Projectview,
+    'vue-context-menu': VueContextMenu
   },
   data() {
     return {
@@ -51,7 +62,11 @@ export default {
       rightResizeLineXWidth: 0,
       onLeftLine: false,
       onRightLine: false,
-      mouseState: 'up'
+      mouseState: 'up',
+
+      // 右键弹窗变量
+      contextMenuTarget: document.getElementById("file_tree"),
+      contextMenuVisible: false
     }
   },
   mounted: function () {
@@ -64,6 +79,10 @@ export default {
     this.rightResizeLineX = coordinate[0]
     this.rightResizeLineY = coordinate[1]
     this.rightResizeLineXWidth = coordinate[2]
+
+    this.contextMenuTarget = document.getElementById("file_tree");
+    console.log(111)
+    console.log(this.contextMenuTarget)
   },
   updated: function () {
     var coordinate = this.getCoordinate('file_tree')
@@ -179,6 +198,18 @@ export default {
       this.mouseState = 'up'
       this.onLeftLine = false
       this.onRightLine = false
+    },
+    createFile () {
+        alert('创建文件')
+        this.contextMenuVisible = false
+    },
+    createDir () {
+        alert('创建文件夹')
+        this.contextMenuVisible = false
+    },
+    deleteMsg () {
+        alert('删除内容')
+        this.contextMenuVisible = false
     }
   }
 }
@@ -261,5 +292,31 @@ html, body{
 }
 .row-resize {
   cursor: row-resize;
+}
+
+/*-------------右键弹窗样式---------------- */
+a {
+  color: #333;
+}
+.right-menu {
+  position: fixed;
+  background: #101010;
+  /*border: solid 1px rgba(0, 0, 0, .2);
+  border-radius: 3px;*/
+  z-index: 999;
+  display: none;
+}
+.right-menu a {
+  width: 100px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  display: block;
+  color: #ffffff;
+  text-decoration: none;
+}
+.right-menu a:hover {
+  background: #ffffff;
+  color: #101010;
 }
 </style>
