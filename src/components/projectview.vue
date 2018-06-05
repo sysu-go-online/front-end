@@ -59,7 +59,8 @@
                     {
                       'dir': isDir
                     }).then(Response => {
-                        console.log(Response.status)
+                        !Response
+                        // console.log(Response.status)
                         if (isSelectedNode) {
                             that.currentFiledata.name = fileName
                             that.currentFiledata.filepath = filePath
@@ -71,7 +72,8 @@
                 filePath = filePath.substring(4, filePath.length)
                 this.$http.delete('/api/'+ this.projectId + '/tree/' + filePath)
                       .then(Response => {
-                          console.log(Response.status)
+                          Response.Tree
+                        //   console.log(Response.status)
                       })
                 if (isSelectedNode) {
                     this.currentFiledata.name = ''
