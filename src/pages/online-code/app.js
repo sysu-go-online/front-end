@@ -4,6 +4,8 @@ import VueResource from 'vue-resource'
 import util from '../../util/util'
 import log from '../../util/logger'
 import '../../assets/icon/iconfont.css'
+import router from '../../router/index'
+
 //引入vue-resource
 Vue.use(VueResource)
 //上线后不在显示警告信息
@@ -15,5 +17,6 @@ Vue.prototype.$utilHelper = util
 
 new Vue({
   el: '#app',
-  render: h => h(App)
+  render: h => h(App),
+  router
 })

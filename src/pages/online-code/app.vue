@@ -28,11 +28,11 @@
   </div>
 </template>
 <script>
-import Editor from 'components/editor'
-import Header from 'components/header'
-import Shell from 'components/shell'
-import Hint from 'components/hint'
-import Projectview from 'components/projectview'
+import Editor from '../../components/editor'
+import Header from '../../components/header'
+import Shell from '../../components/shell'
+import Hint from '../../components/hint'
+import Projectview from '../../components/projectview'
 import { component as VueContextMenu } from '@xunlei/vue-context-menu'
 
 export default {
