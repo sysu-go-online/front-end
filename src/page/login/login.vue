@@ -9,7 +9,7 @@
       <mu-row class="login-form">
         <mu-col span="6">
           <mu-container>
-            <mu-form :model="loginForm" class="mu-demo-form" label-width="100">
+            <mu-form :model="loginForm" class="input-box" label-width="100">
               <mu-form-item prop="username" label="Username" :rules="usernameRules">
                 <mu-text-field v-model="loginForm.username" prop="username"></mu-text-field>
               </mu-form-item>
@@ -32,6 +32,7 @@
 </template>
 
 <script>
+import crypto from 'crypto-js';
 export default {
   name: 'login',
   data () {
@@ -58,9 +59,9 @@ export default {
   methods: {
      login: function () {
       let that = this;
-      console.log(this.$http.defaults.headers);
+      var encrypted = crypto.SHA256(that.loginForm.password, 'go-online');
       this.$http.post('/api/sessions', {
-        'password': this.loginForm.password,
+        'password': encodeURIComponent(encrypted),
         'username': this.loginForm.username
       }).then(response => {
           if (response.status === 200) {
@@ -93,19 +94,24 @@ export default {
   width: 100%;
   align-items: center;
 }
+#login {
+  box-shadow: 6px 4px 23px grey;
+  background: white;
+}
 .login-form {
-  height: 250px;
   .btn {
     margin: 10px 20px;
+  }
+  .input-box {
+    padding: 20px 10px;
   }
 }
 .login-picture {
   background-color: #9254fa;
-  height: 250px;
   .login-picture-text {
     font-size: 50px;
     color: white;
-    line-height: 250px;
+    line-height: 360px;
   }
 }
 </style>

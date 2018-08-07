@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import Home from '@/page/home/home.vue';
 import Editor from '@/page/editor/editor.vue'
 import Login from '@/page/login/login.vue'
 import Register from '@/page/register/register.vue'
@@ -13,6 +14,11 @@ Vue.use(Router)
 export default new Router({
   mode: 'history',
   routes: [
+    {
+      path: '/',
+      name: 'Home',
+      component: Home
+    },
     {
       path: '/editor',
       name: 'Editor',

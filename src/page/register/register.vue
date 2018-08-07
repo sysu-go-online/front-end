@@ -9,7 +9,7 @@
       <mu-row class="login-form">
         <mu-col span="6">
           <mu-container>
-            <mu-form ref="form" :model="loginForm" class="mu-demo-form" label-width="100">
+            <mu-form ref="form" :model="loginForm" class="input-box" label-width="100">
               <mu-form-item prop="email" label="Email" :rules="emailRules">
                 <mu-text-field v-model="loginForm.email" prop="email" type="email"></mu-text-field>
               </mu-form-item>
@@ -35,8 +35,9 @@
 </template>
 
 <script>
+import crypto from 'crypto-js';
 export default {
-  name: 'login',
+  name: 'register',
   data () {
     return {
       loginForm: {
@@ -70,12 +71,12 @@ export default {
     },
     register: function () {
       let that = this;
-      console.log(that.$refs);
       this.$refs.form.validate().then((result) => {
         if (!result) return;
+        var encrypted = crypto.SHA256(that.loginForm.password, 'go-online');
         that.$http.post('/api/users', {
           'email': that.loginForm.email,
-          'password': that.loginForm.password,
+          'password': encodeURIComponent(encrypted),
           'username': that.loginForm.username
         }).then(function (response) {
           if (response.status === 200) {
@@ -96,20 +97,25 @@ export default {
   width: 100%;
   align-items: center;
 }
+#login {
+  box-shadow: 6px 4px 23px grey;
+  background: white;
+  padding: 0;
+}
 .login-form {
-  
-  height: 250px;
   .btn {
     margin: 10px 20px;
+  }
+  .input-box {
+    padding: 20px 10px;
   }
 }
 .login-picture {
   background-color: #9254fa;
-  height: 250px;
   .login-picture-text {
     font-size: 50px;
     color: white;
-    line-height: 250px;
+    line-height: 360px;
   }
 }
 </style>

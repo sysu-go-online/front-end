@@ -11,9 +11,9 @@ export default {
     }
   },
   beforeCreate() {
-      if (this.$session.get('username') == null) {
-          this.$router.push('/login')
-      }
+    if (this.$session.get('username') == null) {
+        this.$router.push('/login')
+    }
   },
   created() {
       
