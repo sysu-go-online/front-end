@@ -1,6 +1,6 @@
 <template>
 	<mu-container id="profile-detail">
-    <p>用户名：{{email}}</p>
+    <p>邮箱：{{email}}</p>
 	</mu-container>
 </template>
 

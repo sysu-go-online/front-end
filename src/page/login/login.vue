@@ -97,6 +97,8 @@ export default {
 #login {
   box-shadow: 6px 4px 23px grey;
   background: white;
+  padding-left: 0;
+  padding-right: 0;
 }
 .login-form {
   .btn {

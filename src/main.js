@@ -16,10 +16,6 @@ import VueSession from 'vue-session'
 
 import config from './util/config';
 
-if (process.env.NODE_ENV=='mock') {
-  require('./util/mock');
-}
-
 Vue.use(MuseUI)
 //  引入vue-resource
 // Vue.use(VueResource)
