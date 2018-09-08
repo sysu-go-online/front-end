@@ -14,6 +14,31 @@ import ax from './lib/axios'
 import './assets/icon/iconfont.css'
 import VueSession from 'vue-session'
 
+// Font-awesome
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+import VuejsDialog from 'vuejs-dialog';
+// import VuejsDialogMixin from 'vuejs-dialog/vuejs-dialog-mixin.min.js'; // only needed in custom components
+
+// include the default style
+import 'vuejs-dialog/dist/vuejs-dialog.min.css';
+
+// Tell Vue to install the plugin.
+Vue.use(VuejsDialog, {
+  html: true,
+  okText: '确定',
+  cancelText: '取消',
+  animation: 'fade'
+});
+
+library.add(faPlus)
+
+Vue.component('font-awesome-icon', FontAwesomeIcon)
+
+Vue.config.productionTip = false
+
 import config from './util/config';
 
 Vue.use(MuseUI)

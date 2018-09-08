@@ -1,23 +1,18 @@
 <template>
   <div id="wrapper">
-    <mu-container id="login">
-      <mu-row class="login-message">
-        <mu-alert color="success" v-if="success">
-          注册成功，请前往登录
-        </mu-alert>
-      </mu-row>
-      <mu-row class="login-form">
+    <mu-container id="register">
+      <mu-row class="register-form">
         <mu-col span="6">
           <mu-container>
-            <mu-form ref="form" :model="loginForm" class="input-box" label-width="100">
+            <mu-form ref="form" :model="registerForm" class="input-box" label-width="100">
               <mu-form-item prop="email" label="Email" :rules="emailRules">
-                <mu-text-field v-model="loginForm.email" prop="email" type="email"></mu-text-field>
+                <mu-text-field v-model="registerForm.email" prop="email" type="email"></mu-text-field>
               </mu-form-item>
               <mu-form-item prop="username" label="Username" :rules="usernameRules">
-                <mu-text-field v-model="loginForm.username" prop="username"></mu-text-field>
+                <mu-text-field v-model="registerForm.username" prop="username"></mu-text-field>
               </mu-form-item>
               <mu-form-item prop="password" label="Password" :rules="passwordRules">
-                <mu-text-field v-model="loginForm.password" prop="password" type="password"></mu-text-field>
+                <mu-text-field v-model="registerForm.password" prop="password" type="password" @keyup.native.enter="register"></mu-text-field>
               </mu-form-item>
               <mu-flex justify-content="center" align-items="center">
                 <mu-button round color="#9254fa" @click="login" class="btn">Login</mu-button>
@@ -26,8 +21,8 @@
             </mu-form>
           </mu-container>
         </mu-col>
-        <mu-col span="6" class="login-picture">
-            <mu-flex justify-content="center" class="login-picture-text">Go Online</mu-flex>
+        <mu-col span="6" class="register-picture">
+            <mu-flex justify-content="center" class="register-picture-text">Go Online</mu-flex>
         </mu-col>
       </mu-row>
     </mu-container>
@@ -40,7 +35,7 @@ export default {
   name: 'register',
   data () {
     return {
-      loginForm: {
+      registerForm: {
         email: '',
         password: '',
         username: ''
@@ -57,9 +52,7 @@ export default {
         { validate: (val) => !!val, message: '必须填写密码'},
         { validate: (val) => val.length >= 3 && val.length <= 20, message: '密码长度大于3小于20'}
       ],
-      message: '',
-      alert1: false,
-      success: false
+      message: ''
     }
   },
   created() {
@@ -73,14 +66,16 @@ export default {
       let that = this;
       this.$refs.form.validate().then((result) => {
         if (!result) return;
-        var encrypted = crypto.SHA256(that.loginForm.password, 'go-online');
+        var encrypted = crypto.SHA256(that.registerForm.password, 'go-online');
         that.$http.post('/api/users', {
-          'email': that.loginForm.email,
+          'email': that.registerForm.email,
           'password': encodeURIComponent(encrypted),
-          'username': that.loginForm.username
+          'username': that.registerForm.username
         }).then(function (response) {
           if (response.status === 200) {
-            that.success = true;
+            that.$dialog.alert('注册成功，前往登录').then(function(dialog) {
+              that.$router.replace('/login');
+            });
           }
         });
       })
@@ -97,12 +92,12 @@ export default {
   width: 100%;
   align-items: center;
 }
-#login {
+#register {
   box-shadow: 6px 4px 23px grey;
   background: white;
   padding: 0;
 }
-.login-form {
+.register-form {
   .btn {
     margin: 10px 20px;
   }
@@ -110,9 +105,9 @@ export default {
     padding: 20px 10px;
   }
 }
-.login-picture {
+.register-picture {
   background-color: #9254fa;
-  .login-picture-text {
+  .register-picture-text {
     font-size: 50px;
     color: white;
     line-height: 360px;

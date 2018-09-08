@@ -7,7 +7,8 @@ import Register from '@/page/register/register.vue'
 import Profile_index from '@/page/profile/index.vue'
 import Profile_my from '@/page/profile/profile.vue'
 import Profile_project from '@/page/profile/project.vue'
-import Profile_add_project from '@/page/profile/newProject.vue'
+import Project from '@/page/project/index.vue'
+import Project_add from '@/page/project/newProject.vue'
 
 Vue.use(Router)
 
@@ -20,7 +21,7 @@ export default new Router({
       component: Home
     },
     {
-      path: '/editor',
+      path: '/editor/:projectname',
       name: 'Editor',
       component: Editor
     },
@@ -49,10 +50,17 @@ export default new Router({
           name: 'Profile_project',
           component: Profile_project,
         },
+      ]
+    },
+    {
+      path: '/project',
+      name: 'Project',
+      component: Project,
+      children: [
         {
           path: 'add',
-          name: 'Profile_add_project',
-          component: Profile_add_project,
+          name: 'Project_add',
+          component: Project_add,
         },
       ]
     }

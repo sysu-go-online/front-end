@@ -28,4 +28,8 @@ html, body{
 .f-right {
   float: right;
 }
+.dg-content-body {
+  border-bottom: none;
+  padding-bottom: 0;
+}
 </style>

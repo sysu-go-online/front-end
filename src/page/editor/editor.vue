@@ -69,13 +69,16 @@ export default {
       contextMenuVisible: false
     }
   },
+  // props: {
+  //   projectName: '',
+  // },
   beforeCreate: function () {
     if (!this.$session.exists()) {
-      // todo
+      this.$router.go(-1);
     }
   },
   created: function () {
-
+    
   },
   mounted: function () {
     var coordinate = this.getCoordinate('file_tree')

@@ -11,9 +11,6 @@
           <mu-list-item button :ripple="false" to="/profile/project" active-class="active-link">
             <mu-list-item-title>项目信息</mu-list-item-title>
           </mu-list-item>
-          <mu-list-item button :ripple="false" to="/profile/add" active-class="active-link">
-            <mu-list-item-title>添加项目</mu-list-item-title>
-          </mu-list-item>
           <mu-list-item button :ripple="false" @click="logout">
             <mu-list-item-title>登出</mu-list-item-title>
           </mu-list-item>
@@ -42,12 +39,14 @@ export default {
   methods: {
 	  logout: function (params) {
       let that = this;
-      this.$http.delete('/api/sessions')
+      this.$http.delete('/api/auth?type=jwt')
         .then(function () {
           that.$session.destroy();
           delete that.$http.defaults.headers.common.Authorization;
           that.$router.replace('/login');
         }).catch(function () {
+          that.$session.destroy();
+          delete that.$http.defaults.headers.common.Authorization;
           that.$router.replace('/login');
         })
     }
@@ -65,7 +64,7 @@ export default {
   background: #e8e7e9;
 }
 #profile {
-  height: 300px;
+  height: 600px;
   background: white;
 }
 .row {
