@@ -37,7 +37,7 @@ export default {
       cmOptions: {
         // codemirror options
         indentUnit: 2,
-        tabSize: 4,
+        tabSize: 2,
         styleActiveLine: true,
         mode: 'text/x-go',
         theme: 'mbo',
@@ -47,7 +47,8 @@ export default {
         // more codemirror options, 更多 codemirror 的高级配置...
       },
       file: '',
-      filedata: this.fileData
+      filedata: this.fileData,
+      filepath: ''
     }
   },
   props: {
@@ -56,6 +57,7 @@ export default {
         return {}
       }
     },
+    projectName: ''
   },
   components: {
     codemirror
@@ -71,7 +73,7 @@ export default {
       this.code = newCode
     },
     Save(){
-      this.$http.post('/api/'+this.filedata.projectid+'/tree/'+this.filedata.filepath, this.code)
+      this.$http.put('/api/users/' + this.$session.get('username') + '/projects/' + this.projectName + '/files/' + this.filepath, this.code)
         .then(Response => {
           console.log(Response.status)
         })
@@ -81,7 +83,7 @@ export default {
         that.code = ''
         return
       }
-      that.$http.get('/api/'+val.projectid+'/tree/'+val.filepath)
+      that.$http.get('/api/users/' + this.$session.get('username') + '/projects/' + this.projectName + '/files/' + val.filepath)
         .then( Response => {
           that.code = Response.data
         })
@@ -90,12 +92,14 @@ export default {
   },
   watch: {
     fileData:{
-      handler:function(val,oldVal){
-        this.filedata = val
+      handler: function (val,oldVal) {
+        console.log(JSON.stringify(val));
+        this.filedata = val;
+        this.file = val.name;
+        this.filepath = val.filepath;
         this.getFile(val, this)
-        this.file = val.name
       },
-        deep:true
+      deep:true
     },
   }
 }

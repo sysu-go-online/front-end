@@ -26,7 +26,7 @@ import TreeMenu from './treeMenu.vue'
 export default {
   props: {
     value: {
-      default: function (){
+      default: function () {
         return {}
       }
     }
@@ -44,7 +44,7 @@ export default {
     TreeMenu
   },
   mounted: function () {
-     window.addEventListener('scroll', this.updateMenuWidth, true)
+    window.addEventListener('scroll', this.updateMenuWidth, true)
   },
   methods: {
     // 选中某个文件、文件夹或取消选中
@@ -69,11 +69,11 @@ export default {
     // 打开文件
     openFile: function (node) {
       var file = {
-          name: node.name,
-          filepath: this.getFilePath(node, this),
-          nodeData: node
-        }
-        this.$emit('OpenFile', file)
+        name: node.name,
+        filepath: this.getFilePath(node, this),
+        nodeData: node
+      }
+      this.$emit('OpenFile', file)
     },
     // 修改节点名称
     changeNode: function (node, name) {
@@ -85,8 +85,8 @@ export default {
       // 获取filepath, 触发父组件数据更新
       node.name = name
       var filePath = this.getFilePath(node, this)
-      var isSelected = (this.selNode && this.selNode.id === node.id) ? true:false
-      var isDir = (node.type === 'dir') ? true:false
+      var isSelected = this.selNode && this.selNode.id === node.id
+      var isDir = node.type === 'dir'
       this.$emit('SaveEdit', name, filePath, isSelected, isDir)
     },
     // 删除节点
@@ -104,8 +104,8 @@ export default {
       this.$emit('input', this.tree)
       // 删除节点，触发父节点更新
       var filePath = this.getFilePath(node, this)
-      var isSelected = (this.selNode && this.selNode.id === node.id) ? true:false
-      this.$emit('DelNod', filePath, isSelectedNode)
+      var isSelected = (this.selNode && this.selNode.id === node.id)
+      this.$emit('DelNod', filePath, isSelected)
     },
     // 增加文件
     addFlie: function () {
@@ -139,21 +139,22 @@ export default {
       })
       this.$utilHelper.childrenSort(children)
       // v-model双向绑定，更新父组件数据
+      this.$http.post(this.$common.address + '/api/users/' + this.$session.get('username') + '/projects/' + this.projectName + '/files/');
       this.$emit('input', this.tree)
     },
     // 获取文件路径
-    getFilePath: function(node, that) {
-        var parentNode = that.$utilHelper.getNode(that.tree, node.id).parentNode
-        var filePath = node.name
-        while (parentNode != null) {
-          node = parentNode
-          filePath = parentNode.name + '/' + filePath
-          parentNode = that.$utilHelper.getNode(that.tree,node.id).parentNode
-        }
-        return filePath
-     },
-    updateMenuWidth: function(el) {
-      this.menuWidth = document.getElementById("file_data").scrollWidth + 'px'
+    getFilePath: function (node, that) {
+      var parentNode = that.$utilHelper.getNode(that.tree, node.id).parentNode
+      var filePath = node.name
+      while (parentNode != null) {
+        node = parentNode
+        filePath = parentNode.name + '/' + filePath
+        parentNode = that.$utilHelper.getNode(that.tree, node.id).parentNode
+      }
+      return filePath
+    },
+    updateMenuWidth: function (el) {
+      this.menuWidth = document.getElementById('file_data').scrollWidth + 'px'
     }
   },
   watch: {
