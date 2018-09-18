@@ -110,8 +110,8 @@ export default {
         // 获取filepath, 触发父组件数据更新
         node.name = name;
 
-        var isSelected = this.selNode && this.selNode.id === node.id;
-        var isDir = node.type === 'dir';
+        // var isSelected = this.selNode && this.selNode.id === node.id;
+        // var isDir = node.type === 'dir';
         // this.$emit('SaveEdit', name, filePath, isSelected, isDir)
         this.$dialog.alert('重命名成功');
       });
@@ -141,7 +141,7 @@ export default {
         return;
       }
       let that = this;
-      if (undefined == this.$utilHelper.getNode(this.tree, this.selNode.id).node.children) {
+      if (undefined === this.$utilHelper.getNode(this.tree, this.selNode.id).node.children) {
         this.$utilHelper.getNode(this.tree, this.selNode.id).node.children = [];
       }
       var children = this.$utilHelper.getNode(this.tree, this.selNode.id).node.children;
@@ -173,7 +173,7 @@ export default {
         return;
       }
       let that = this;
-      if (undefined == this.$utilHelper.getNode(this.tree, this.selNode.id).node.children) {
+      if (undefined === this.$utilHelper.getNode(this.tree, this.selNode.id).node.children) {
         this.$utilHelper.getNode(this.tree, this.selNode.id).node.children = [];
       }
       var children = this.$utilHelper.getNode(this.tree, this.selNode.id).node.children;

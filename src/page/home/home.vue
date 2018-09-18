@@ -13,6 +13,8 @@ export default {
   beforeCreate () {
     if (this.$cookie.get('jwt') == null) {
       this.$router.push('/login');
+    } else {
+      this.$router.push('/profile/my');
     }
   },
   created () {

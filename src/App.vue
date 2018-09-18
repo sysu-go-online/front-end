@@ -8,6 +8,13 @@
 export default {
   name: 'App',
   created () {
+    if (this.$cookie.get('jwt')) {
+      this.$http.post('/api/auth?type=jwt', {}, {
+        headers: {'Authorization': this.$cookie.get('jwt')}
+      });
+    } else {
+      this.$router.push('/login');
+    }
   }
 };
 </script>
