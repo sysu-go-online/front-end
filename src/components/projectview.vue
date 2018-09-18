@@ -57,7 +57,6 @@ export default {
     },
     DelNode: function (filePath, isSelectedNode) {
       let that = this;
-      console.log(filePath);
       this.$http
         .delete('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + filePath, {
           headers: {'Authorization': that.$cookie.get('jwt')}

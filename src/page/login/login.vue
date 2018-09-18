@@ -51,6 +51,7 @@ export default {
   },
   methods: {
     login: function () {
+      let that = this;
       var encrypted = crypto.SHA256(this.loginForm.password, 'go-online');
       this.$http.post('/api/auth?type=jwt', {
         'password': encodeURIComponent(encrypted),
@@ -69,7 +70,7 @@ export default {
       }).catch(err => {
         console.log(err);
         if (err.response.status === 400) {
-          this.$dialog.alert('用户名或密码错误');
+          that.$dialog.alert('用户名或密码错误');
         }
       });
     },

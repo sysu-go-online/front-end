@@ -58,6 +58,7 @@ export default {
       }
       that.ws = new WebSocket('ws://120.79.0.17/api/ws/tty');
       that.ws.onopen = function(evt) {
+        console.log(that.projectName);
         that.ws.send(JSON.stringify({
           'JWT': that.$cookie.get('jwt'),
           'Project': that.projectName,
@@ -91,7 +92,6 @@ export default {
   },
   created() {
     this.projectName = this.$route.params.projectname;
-    
   },
   mounted() {
     var that = this;

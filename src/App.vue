@@ -31,7 +31,7 @@ html, body{
   float: right;
 }
 .dg-content-body {
-  border-bottom: none;
-  padding-bottom: 0;
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
 }
 </style>

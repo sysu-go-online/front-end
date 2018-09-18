@@ -63,17 +63,18 @@ export default {
       this.$router.push('/login');
     },
     register: function () {
+      let that = this;
       this.$refs.form.validate().then((result) => {
         if (!result) return;
-        var encrypted = crypto.SHA256(this.registerForm.password, 'go-online');
-        this.$http.post('/api/users', {
-          'email': this.registerForm.email,
+        var encrypted = crypto.SHA256(that.registerForm.password, 'go-online');
+        that.$http.post('/api/users', {
+          'email': that.registerForm.email,
           'password': encodeURIComponent(encrypted),
-          'username': this.registerForm.username
+          'username': that.registerForm.username
         }).then(function (response) {
           if (response.status === 200) {
-            this.$dialog.alert('注册成功，前往登录').then(function (dialog) {
-              this.$router.replace('/login');
+            that.$dialog.alert('注册成功，前往登录').then(function (dialog) {
+              that.$router.replace('/login');
             });
           }
         });

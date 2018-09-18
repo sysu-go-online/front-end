@@ -71,6 +71,7 @@ export default {
   },
   methods: {
     addProject: function () {
+      let that = this;
       this.$refs.form.validate().then((result) => {
         if (!result) return;
         this.$http.post('/api/users/' + this.$cookie.get('username') + '/projects', {
@@ -82,8 +83,8 @@ export default {
           headers: {'Authorization': this.$cookie.get('jwt')}
         }).then(function (response) {
           if (response.status === 200) {
-            this.$dialog.alert('项目创建成功，返回项目界面').then(function (dialog) {
-              this.$router.go(-1);
+            that.$dialog.alert('项目创建成功，返回项目界面').then(function (dialog) {
+              that.$router.go(-1);
             });
           }
         });
