@@ -2,12 +2,13 @@ import axios from 'axios';
 
 const ax = axios.create({
   timeout: 3000,
-  withCredentials: false,
+  withCredentials: false
   // baseURL: config.address
 });
 ax.interceptors.response.use(
   res => res,
   err => {
+    console.log(err.response);
     if (err.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx

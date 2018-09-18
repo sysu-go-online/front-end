@@ -44,9 +44,9 @@ export default {
           canDelete: true
         }
       ]
-    }
+    };
   }
-}
+};
 </script>
 
 <style>

@@ -42,35 +42,35 @@ export default {
       newName: '',
       tree_menu_style: {},
       treeNode: JSON.parse(JSON.stringify(this.nodeData))
-    }
+    };
   },
   name: 'tree-menu',
   computed: {
     indent () {
-      return { transform: `translate(${this.depth * 20}px)` }
+      return { transform: `translate(${this.depth * 20}px)` };
     },
     iconType () {
       if (this.treeNode.type === 'dir') {
         if (this.showChildren) {
-          return 'icon ' + this.icon_type.get('folder-open')
+          return 'icon ' + this.icon_type.get('folder-open');
         }
-        return 'icon ' + this.icon_type.get('folder-close')
+        return 'icon ' + this.icon_type.get('folder-close');
       } else if (this.treeNode.type === 'file') {
-        return 'icon ' + this.icon_type.get('file')
+        return 'icon ' + this.icon_type.get('file');
       } else {
-        return 'icon ' + this.icon_type.get(this.treeNode.type)
+        return 'icon ' + this.icon_type.get(this.treeNode.type);
       }
     },
     iconName () {
       if (this.treeNode.type === 'dir') {
         if (this.showChildren) {
-          return '#icon-folder-open'
+          return '#icon-folder-open';
         }
-        return '#icon-folder'
+        return '#icon-folder';
       } else if (this.treeNode.type === 'file') {
-        return '#icon-document'
+        return '#icon-document';
       } else {
-        return '#' + this.icon_type.get(this.treeNode.type)
+        return '#' + this.icon_type.get(this.treeNode.type);
       }
     }
   },
@@ -78,63 +78,63 @@ export default {
     handleClick: function () {
       // 判断是否可以点击
       if (!this.clickable) {
-        return
+        return;
       }
       // 通过点击改变展开状态
-      this.showChildren = !this.showChildren
+      this.showChildren = !this.showChildren;
       // 改变选中状态节点
-      this.$emit('selectNode', this.treeNode)
+      this.$emit('selectNode', this.treeNode);
 
       // 箭头旋转
       if (this.showChildren) {
-        this.arrow_rotate = { transform: `rotate(90deg)` }
+        this.arrow_rotate = { transform: `rotate(90deg)` };
       } else {
-        this.arrow_rotate = { transform: `none` }
+        this.arrow_rotate = { transform: `none` };
       }
       if (this.treeNode.type !== 'dir') {
-        this.$emit('openFile', this.treeNode)
+        this.$emit('openFile', this.treeNode);
       }
     },
     // 修改当前节点name
     change_node: function () {
-      this.edit_status = 1
-      this.$emit('changeClickable')
+      this.edit_status = 1;
+      this.$emit('changeClickable');
     },
     onEnter: function () {
-      this.$emit('changeNode', this.treeNode, this.newName)
-      this.edit_status = 0
-      this.newName = ''
+      this.$emit('changeNode', this.treeNode, this.newName);
+      this.edit_status = 0;
+      this.newName = '';
     },
     // 删除当前节点
     delete_node: function () {
-      this.$emit('deleteNode', this.treeNode)
+      this.$emit('deleteNode', this.treeNode);
     },
     // 向上传递函数
     selectNode: function (node) {
-      this.$emit('selectNode', node)
+      this.$emit('selectNode', node);
     },
     changeNode: function (node, name) {
-      this.$emit('changeNode', node, name)
+      this.$emit('changeNode', node, name);
     },
     deleteNode: function (node) {
-      this.$emit('deleteNode', node)
+      this.$emit('deleteNode', node);
     },
     changeClickable: function () {
-      this.$emit('changeClickable')
+      this.$emit('changeClickable');
     },
     openFile: function (node) {
-      this.$emit('openFile', node)
+      this.$emit('openFile', node);
     }
   },
   watch: {
     nodeData: {
       handler: function (val, oldval) {
-        this.treeNode = JSON.parse(JSON.stringify(val))
+        this.treeNode = JSON.parse(JSON.stringify(val));
       },
       deep: true
     }
   }
-}
+};
 </script>
 
 <style>

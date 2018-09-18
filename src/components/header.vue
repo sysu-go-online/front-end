@@ -1,15 +1,16 @@
 <template>
   <div id="header">
-    <p id="name">在线编辑器</p>
+    <p id="name"><router-link to="/profile/project">返回</router-link></p>
     <div class="user-info f-right">
       <div id="headImg"></div>
-      <div id="select">
+      <!-- <div id="select">
         <select v-model='selected' @click="ss()">
           <option v-for="option in options" v-bind:value="option.value" v-bind:key="option.value">
               {{option.text}}
           </option>
         </select>
-      </div>
+      </div> -->
+
     </div>
   </div>
 </template>
@@ -25,14 +26,14 @@ export default {
         {text: 'Others', value: '1'},
         {text: 'Quit', value: '2'}
       ]
-    }
+    };
   },
   methods: {
     ss: function () {
       // Todo
     }
   }
-}
+};
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>

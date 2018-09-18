@@ -12,52 +12,38 @@ export default {
       treeData: {},
       projectId: 0,
       currentFiledata: {},
-      projectName: 'app',
+      projectName: 'undefined'
     };
   },
   components: {
     Tree
   },
   created: function () {
-    console.log(this.$route);
+    let that = this;
     this.projectName = this.$route.params.projectname;
-    if (this.projectName == undefined) {}
-    this.$http.get('/api/users/' + this.$session.get('username') + '/projects/' + this.projectName + '/files', 'GET').then(Response => {
-      // var tree = Response.data
-      // this.$utilHelper.formatChildren(tree)
-      // this.$utilHelper.treeSort(tree)
-      // this.treeData = tree
-
+    if (this.projectName === undefined) {}
+    this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files', {
+      headers: {'Authorization': that.$cookie.get('jwt')}
+    }).then(Response => {
       var tree = {
-        name: this.projectName,
-        id: this.projectId,
-        type: 'dir',
-        root: true,
-        isSelected: false,
-        children: Response.data
+        name: Response.data.name,
+        id: Response.data.id,
+        type: Response.data.type,
+        root: Response.data.root,
+        isSelected: Response.data.isSelected,
+        children: Response.data.children
       };
       this.$utilHelper.formatChildren(tree);
       this.$utilHelper.treeSort(tree);
+      console.log(tree);
       this.treeData = tree;
     });
-    // var tree = {
-    //     name: 'app',
-    //     id: this.$utilHelper.generateUUID(),
-    //     type: 'dir',
-    //     root: true,
-    //     isSelected: false,
-    //     children: this.testData
-    // }
-    // this.$utilHelper.formatChildren(tree)
-    // this.$utilHelper.treeSort(tree)
-    // this.treeData = tree
   },
   methods: {
     SaveEdit: function (fileName, filePath, isSelectedNode, isDir) {
       var that = this;
-      filePath = filePath.substring(4, filePath.length);
       this.$http
-        .put('/api/users' + this.$session.get('username') + this.projectId + '/tree/' + filePath, {
+        .put('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files' + filePath, {
           dir: isDir
         })
         .then(Response => {
@@ -70,11 +56,13 @@ export default {
         });
     },
     DelNode: function (filePath, isSelectedNode) {
-      filePath = filePath.substring(4, filePath.length);
+      let that = this;
+      console.log(filePath);
       this.$http
-        .delete('/api/users' + this.$session.get('username') + this.projectId + '/tree/' + filePath)
-        .then(Response => {
-          console.log(Response.status);
+        .delete('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + filePath, {
+          headers: {'Authorization': that.$cookie.get('jwt')}
+        }).then(Response => {
+          that.$dialog.alert('删除成功');
         });
       if (isSelectedNode) {
         this.currentFiledata.name = '';

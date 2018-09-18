@@ -5,12 +5,12 @@
         <div class='project-name project-info-row'>{{item.name}}</div>
         <div class='project-language project-info-row'>{{item.language}}</div>
         <div class='project-actions project-info-row'>
-          <div class='delete' @click=''>删除</div>
+          <div class='delete' @click='deleteProject(item.name)'>删除</div>
           <div class='open'><router-link :to="'/editor/'+item.name">打开</router-link></div>
         </div>
       </div>
       <div id='add-project' class='single-project' @click='addProject'>
-        <font-awesome-icon icon="plus" size='6x' style="color: black; line-height: 150px;" />
+        <font-awesome-icon icon="plus" size='4x' style="color: black; line-height: 150px;" />
       </div>
     </div>
   </div>
@@ -23,26 +23,30 @@ export default {
     return {
       items: [
       ]
-    }
+    };
   },
-  async created() {
-    let res = await this.$http.get('/api/users/' + this.$session.get('username') + '/projects');
+  async created () {
+    let res = await this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects');
     if (res.data) {
       this.items = res.data;
     }
   },
   methods: {
-    showDetail() {
-      //跳转到online-code
+    addProject () {
+      this.$router.push('/project/add');
     },
-    addProject() {
-      this.$router.push('/project/add')
-    },
-    deleteProject() {
-      that.$dialog.alert('接口都还没做呢');
+    deleteProject (name) {
+      this.$dialog.confirm('确定要删除项目' + name + '吗？')
+        .then(function () {
+          this.$http.delete('/api/users/' + this.$cookie.get('username') + '/projects/' + name, {
+            headers: {'Authorization': this.$cookie.get('jwt')}
+          }).then(function () {
+            this.$dialog.alert('删除项目' + name + '成功');
+          });
+        });
     }
   }
-}
+};
 </script>
 
 <style lang="scss">
@@ -84,12 +88,15 @@ export default {
     >div {
       margin: 5px 5px;
     }
+    .delete {
+      cursor: pointer;
+    }
   }
 }
 
 #add-project {
   border-style: dashed;
-  padding: 30px 100px;
+  padding: 45px 100px;
   cursor: pointer;
 }
 

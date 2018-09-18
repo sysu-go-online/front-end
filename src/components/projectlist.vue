@@ -34,14 +34,14 @@ export default {
           canDelete: false
         }
       ]
-    }
+    };
   },
   methods: {
-    showDetail() {
-      //跳转到online-code
+    showDetail () {
+      // 跳转到online-code
     }
   }
-}
+};
 </script>
 
 <style>

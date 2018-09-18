@@ -19,7 +19,8 @@ export default {
       term: null,
       ws: null,
       command: '',
-      key: null // 获取换行字符对应的字符串; 验证，xterm.js先触发'key'事件，再触发'data'事件
+      key: null, // 获取换行字符对应的字符串; 验证，xterm.js先触发'key'事件，再触发'data'事件
+      projectName: ''
     }
   },
   props:['height', 'width'],
@@ -43,6 +44,7 @@ export default {
 
       term.writeln('欢迎来到 go-online!')
       term.writeln('Type some keys and commands to play around.')
+      term.writeln('输入命令以建立链接')
       term.writeln('')
       term.prompt()
 
@@ -54,45 +56,67 @@ export default {
         that.ws.send(command)
         return
       }
-      that.ws = new WebSocket('ws://120.79.0.17/api/ws')
+      that.ws = new WebSocket('ws://120.79.0.17/api/ws/tty');
       that.ws.onopen = function(evt) {
-        that.ws.send(command)
+        that.ws.send(JSON.stringify({
+          'JWT': that.$cookie.get('jwt'),
+          'Project': that.projectName,
+          'Command': command
+        }));
+        // that.term.writeln('链接建立成功');
       }
       that.ws.onmessage = function (evt) {
-        that.term.write(evt.data.replace(/\n/g, '\r\n'))
-        // that.term.write(evt.data.split('\n').join('\r\n'))
+        let res = JSON.parse(evt.data);
+        if (res.err) {
+          if (res.err == "websocket: close 1006 (abnormal closure): unexpected EOF") return;
+          that.term.writeln(res.err);
+          return;
+        }
+        that.term.write(res.msg);
       }
       that.ws.onclose = function(evt) {
-        that.term.write('$ ')
-        that.ws = null
+        // that.term.writeln('链接已关闭，输入命令重新建立链接');
+        that.term.write('$ ');
+        that.ws = null;
       }
+      that.ws.onerror = function(evt) {
+        that.term.writeln('报错');
+      }
+    },
+    terminalSend: function (command) {
+      this.ws.send(JSON.stringify({
+        'Command': command
+      }));
     }
   },
+  created() {
+    this.projectName = this.$route.params.projectname;
+    
+  },
   mounted() {
-    var that = this
-    this.term = this.Xterm()
+    var that = this;
+    this.term = this.Xterm();
     this.term.on('key', function(key, ev) {
       // TODO: Add event when different key was hit
       // Store command if the connection has not be established
       if (!that.ws) {
         // When meet Ctrl+C clear all the command
         if (ev.keyCode == 67) {
-          that.term.prompt()
-          that.command.length = 0
-          return
+          that.term.prompt();
+          that.command.length = 0;
+          return;
         }
 
         // Send command when meet return
         if (ev.keyCode == 13) {
-          console.log(that.command)
           if (that.command.length == 0) {
-            that.term.prompt()
+            that.term.prompt();
           } else {
-            that.term.write('\r\n')
-            that.terminalFlow(that.command, that)
-            that.command = ''
+            that.term.write('\r\n');
+            that.terminalFlow(that.command, that);
+            that.command = '';
           }
-          return
+          return;
         }
 
         // Delete
@@ -113,38 +137,12 @@ export default {
       } else {
         if (that.ws.readyState == 1) {
           // TODO: Send content according to the key code
+          that.terminalSend(key);
+          
         } else if (that.ws.readyState == 0) {
           // TODO: Store message when the ws is connecting and send message when the connection has been send
         }
       }
-      // if (ev.keyCode == 67) {
-      //   if(that.ws != null) {
-      //     that.ws.close()
-      //   }
-      // }
-      // if (ev.keyCode == 13) {
-      //   // 先触发'key'事件，再触发'data'事件，所以换行符必然会被写入command,采用该种方式避免
-      //   that.key = key
-      //   if (that.command.length == 0) {
-      //     that.term.prompt()
-      //   } else {
-      //     that.term.write('\r\n')
-      //     that.terminalFlow(that.command, that)
-      //     that.command = ''
-      //   }
-      // } else if (ev.keyCode == 8) {
-      //   // Do not delete the prompt
-      //   if (that.ws === null && that.term.buffer.x > 2) {
-      //     var len = that.command.length
-      //     if(that.command.charCodeAt(len - 1) > 255) {
-      //       that.term.write('\b \b')
-      //       that.term.write('\b \b')
-      //     } else {
-      //       that.term.write('\b \b')
-      //     }
-      //     that.command = that.command.slice(0, len - 1)
-      //   }
-      // }
     })
 
     this.term.on('paste', function(data, ev) {
@@ -168,7 +166,7 @@ export default {
         that.term.write(str)
       } else {
         if (that.ws.readyState == 1) {
-          that.terminalFlow(str, that)
+          // that.terminalFlow(str, that)
         } else if (that.ws.readyState == 0) {
           // TODO: Store message when the ws is connecting and send message when the connection has been send
         }

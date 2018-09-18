@@ -22,12 +22,12 @@
 
 <script>
 // require component
-import { codemirror } from 'vue-codemirror'
-import 'codemirror/lib/codemirror.css'
-import 'codemirror/mode/go/go.js'
-import 'codemirror/theme/mbo.css'
-import 'codemirror/addon/edit/matchbrackets.js'
-import 'codemirror/addon/edit/closebrackets.js'
+import { codemirror } from 'vue-codemirror';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/mode/go/go.js';
+import 'codemirror/theme/mbo.css';
+import 'codemirror/addon/edit/matchbrackets.js';
+import 'codemirror/addon/edit/closebrackets.js';
 
 export default {
   name: 'Editor',
@@ -49,12 +49,12 @@ export default {
       file: '',
       filedata: this.fileData,
       filepath: ''
-    }
+    };
   },
   props: {
     fileData: {
       default: function () {
-        return {}
+        return {};
       }
     },
     projectName: ''
@@ -64,45 +64,52 @@ export default {
   },
   methods: {
     onCmReady (cm) {
-      console.log('the editor is readied!', cm.getTextArea())
+      // console.log('the editor is readied!', cm.getTextArea())
     },
     onCmFocus (cm) {
-      console.log('the editor is focus!', cm)
+      // console.log('the editor is focus!', cm)
     },
     onCmCodeChange (newCode) {
-      this.code = newCode
+      this.code = newCode;
     },
-    Save(){
-      this.$http.put('/api/users/' + this.$session.get('username') + '/projects/' + this.projectName + '/files/' + this.filepath, this.code)
-        .then(Response => {
-          console.log(Response.status)
-        })
+    Save () {
+      let that = this;
+      this.$http.patch('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + this.filepath, {
+        'operation': 'update',
+        'content': this.code
+      }, {
+        headers: {'Authorization': this.$cookie.get('jwt')}
+      }).then(Response => {
+        that.$dialog.alert('保存成功');
+      });
     },
-    getFile: function(val, that) {
-      if (val.name == '') {
-        that.code = ''
-        return
+    getFile: function (val, that) {
+      if (val.name === '') {
+        that.code = '';
+        return;
       }
-      that.$http.get('/api/users/' + this.$session.get('username') + '/projects/' + this.projectName + '/files/' + val.filepath)
-        .then( Response => {
-          that.code = Response.data
-        })
+      this.filepath = val.filepath;
+      that.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + val.filepath, {
+        headers: {'Authorization': that.$cookie.get('jwt')}
+      }).then(Response => {
+        that.code = Response.data.toString();
+      });
     },
-    closeFile: function() {}
+    closeFile: function () {}
   },
   watch: {
-    fileData:{
-      handler: function (val,oldVal) {
+    fileData: {
+      handler: function (val, oldVal) {
         console.log(JSON.stringify(val));
         this.filedata = val;
         this.file = val.name;
         this.filepath = val.filepath;
-        this.getFile(val, this)
+        this.getFile(val, this);
       },
-      deep:true
-    },
+      deep: true
+    }
   }
-}
+};
 
 </script>
 
@@ -174,7 +181,7 @@ export default {
   display: inline-block;
   position: absolute;
   top: 5px;
-  right: 10px; 
+  right: 10px;
 }
 .vue-codemirror,.CodeMirror{
     height: 100% !important;

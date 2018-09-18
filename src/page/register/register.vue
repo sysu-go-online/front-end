@@ -41,21 +41,21 @@ export default {
         username: ''
       },
       emailRules: [
-        { validate: (val) => !!val, message: '必须填写邮箱'},
-        { validate: (val) => val.match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/), message: '邮箱必须符合格式'}
+        { validate: (val) => !!val, message: '必须填写邮箱' },
+        { validate: (val) => val.match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/), message: '邮箱必须符合格式' }
       ],
       usernameRules: [
-        { validate: (val) => !!val, message: '必须填写用户名'},
-        { validate: (val) => val.length >= 3 && val.length <= 20, message: '用户名长度小于20'}
+        { validate: (val) => !!val, message: '必须填写用户名' },
+        { validate: (val) => val.length >= 3 && val.length <= 20, message: '用户名长度小于20' }
       ],
       passwordRules: [
-        { validate: (val) => !!val, message: '必须填写密码'},
-        { validate: (val) => val.length >= 3 && val.length <= 20, message: '密码长度大于3小于20'}
+        { validate: (val) => !!val, message: '必须填写密码' },
+        { validate: (val) => val.length >= 3 && val.length <= 20, message: '密码长度大于3小于20' }
       ],
       message: ''
-    }
+    };
   },
-  created() {
+  created () {
 
   },
   methods: {
@@ -63,25 +63,24 @@ export default {
       this.$router.push('/login');
     },
     register: function () {
-      let that = this;
       this.$refs.form.validate().then((result) => {
         if (!result) return;
-        var encrypted = crypto.SHA256(that.registerForm.password, 'go-online');
-        that.$http.post('/api/users', {
-          'email': that.registerForm.email,
+        var encrypted = crypto.SHA256(this.registerForm.password, 'go-online');
+        this.$http.post('/api/users', {
+          'email': this.registerForm.email,
           'password': encodeURIComponent(encrypted),
-          'username': that.registerForm.username
+          'username': this.registerForm.username
         }).then(function (response) {
           if (response.status === 200) {
-            that.$dialog.alert('注册成功，前往登录').then(function(dialog) {
-              that.$router.replace('/login');
+            this.$dialog.alert('注册成功，前往登录').then(function (dialog) {
+              this.$router.replace('/login');
             });
           }
         });
-      })
+      });
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>

@@ -4,28 +4,28 @@ export default {
   info: function (msg, type) {
     if (this.openLog) {
       if (type && type.indexOf(this.filter) > -1) {
-        console.log('[' + type + ']' + msg)
+        console.log('[' + type + ']' + msg);
       } else if (!type) {
-        console.info(msg)
+        console.info(msg);
       }
     }
   },
   error: function (msg, type) {
     if (this.openLog) {
       if (type && type.indexOf(this.filter) > -1) {
-        console.log('[' + type + ']' + msg)
+        console.log('[' + type + ']' + msg);
       } else if (!type) {
-        console.error(msg)
+        console.error(msg);
       }
     }
   },
   log: function (msg, type) {
     if (this.openLog) {
       if (type && type.indexOf(this.filter) > -1) {
-        console.log('[' + type + ']' + msg)
+        console.log('[' + type + ']' + msg);
       } else if (!type) {
-        console.log(msg)
+        console.log(msg);
       }
     }
   }
-}
+};

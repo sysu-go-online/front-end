@@ -37,46 +37,47 @@ export default {
         username: ''
       },
       usernameRules: [
-        { validate: (val) => !!val, message: '必须填写用户名'},
-        { validate: (val) => val.length >= 3 && val.length <= 20, message: '用户名长度小于20'}
+        { validate: (val) => !!val, message: '必须填写用户名' },
+        { validate: (val) => val.length >= 3 && val.length <= 20, message: '用户名长度小于20' }
       ],
       passwordRules: [
-        { validate: (val) => !!val, message: '必须填写密码'},
-        { validate: (val) => val.length >= 3 && val.length <= 20, message: '密码长度大于3小于20'}
+        { validate: (val) => !!val, message: '必须填写密码' },
+        { validate: (val) => val.length >= 3 && val.length <= 20, message: '密码长度大于3小于20' }
       ]
-    }
+    };
   },
-  created() {
-
+  created () {
+    console.log(this);
   },
   methods: {
-     login: function () {
-      let that = this;
-      var encrypted = crypto.SHA256(that.loginForm.password, 'go-online');
+    login: function () {
+      var encrypted = crypto.SHA256(this.loginForm.password, 'go-online');
       this.$http.post('/api/auth?type=jwt', {
         'password': encodeURIComponent(encrypted),
         'username': this.loginForm.username
       }).then(response => {
-          if (response.status === 200) {
-            console.log(response);
-            that.$session.start()
-            that.$session.set('jwt', response.headers.authorization);
-            that.$session.set('username', that.loginForm.username);
-            that.$http.defaults.headers.common['Authorization'] = response.headers.authorization;
-            that.$router.push('/profile/my');
-          }
-        }).catch(err => {
-          console.log(err.response);
-          if (err.response.status === 400) {
-            that.$dialog.alert('用户名或密码错误');
-          }
-        });
+        if (response.status === 200) {
+          this.$cookie.delete('jwt');
+          this.$cookie.delete('username');
+          let token = this.$jwt.decode(response.headers.authorization, 'go-online');
+          let exp = new Date();
+          exp.setDate(token.jwt);
+          this.$cookie.set('jwt', response.headers.authorization, { expires: exp });
+          this.$cookie.set('username', token.sub, { expires: exp });
+          this.$router.push('/profile/my');
+        }
+      }).catch(err => {
+        console.log(err);
+        if (err.response.status === 400) {
+          this.$dialog.alert('用户名或密码错误');
+        }
+      });
     },
     register: function () {
       this.$router.push('/register');
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>

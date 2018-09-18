@@ -10,17 +10,17 @@
 export default {
   name: 'project-index',
   data () {
-	return {
+    return {
 
-	  }
+    };
   },
-  created() {
+  created () {
 
   },
   methods: {
-	  
+
   }
-}
+};
 </script>
 
 <style lang="scss">
