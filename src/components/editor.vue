@@ -64,10 +64,10 @@ export default {
   },
   methods: {
     onCmReady (cm) {
-      // console.log('the editor is readied!', cm.getTextArea())
+
     },
     onCmFocus (cm) {
-      // console.log('the editor is focus!', cm)
+
     },
     onCmCodeChange (newCode) {
       this.code = newCode;
