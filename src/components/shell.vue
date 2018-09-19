@@ -56,7 +56,8 @@ export default {
         that.ws.send(command)
         return
       }
-      that.ws = new WebSocket('ws://120.79.0.17/api/ws/tty');
+      let hostname = window.location.hostname;
+      that.ws = new WebSocket('ws://' + hostname + '/api/ws/tty');
       that.ws.onopen = function(evt) {
         console.log(that.projectName);
         that.ws.send(JSON.stringify({
