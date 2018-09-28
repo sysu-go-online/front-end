@@ -13,7 +13,7 @@
       </div>
     </div>
     <tree-menu
-      v-if="showChildren"
+      v-if="showChildren || treeNode.root"
       v-for="node in this.treeNode.children"
       @selectNode="selectNode"
       :key = "node.id"

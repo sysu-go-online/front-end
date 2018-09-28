@@ -10,18 +10,13 @@
       <span id="save"><input type="button" value="保存" id="save-button" @click="Save"></span>
     </div>
     <div id="edit-area">
-        <!-- <codemirror v-model="code"
-              :options="cmOptions"
-              @ready="onCmReady"
-              @focus="onCmFocus"
-              @input="onCmCodeChange">
-        </codemirror> -->
-      <monaco-editor
+      <MonacoEditor
         class="editor"
         v-model="code"
         language="cpp"
-        theme="vs-dark">
-      </monaco-editor>
+        theme="vs-dark"
+        @change="updateFunc"
+      />
     </div>
   </div>
 </template>
@@ -71,6 +66,9 @@ export default {
     codemirror
   },
   methods: {
+    updateFunc (newCode, evt) {
+      this.code = newCode;
+    },
     onCmReady (cm) {
 
     },
