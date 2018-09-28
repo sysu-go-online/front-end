@@ -78,7 +78,10 @@ export default {
           'name': this.form.name,
           'description': this.form.description,
           'language': parseInt(this.form.language),
-          'git_path': this.form.git_path
+          'git_path': this.form.git_path,
+          'setting': {
+            'username': this.$cookie.get('username')
+          }
         }, {
           headers: {'Authorization': this.$cookie.get('jwt')}
         }).then(function (response) {

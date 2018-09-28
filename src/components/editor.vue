@@ -10,17 +10,24 @@
       <span id="save"><input type="button" value="保存" id="save-button" @click="Save"></span>
     </div>
     <div id="edit-area">
-        <codemirror v-model="code"
+        <!-- <codemirror v-model="code"
               :options="cmOptions"
               @ready="onCmReady"
               @focus="onCmFocus"
               @input="onCmCodeChange">
-        </codemirror>
+        </codemirror> -->
+      <monaco-editor
+        class="editor"
+        v-model="code"
+        language="cpp"
+        theme="vs-dark">
+      </monaco-editor>
     </div>
   </div>
 </template>
 
 <script>
+import MonacoEditor from 'vue-monaco';
 // require component
 import { codemirror } from 'vue-codemirror';
 import 'codemirror/lib/codemirror.css';
@@ -60,6 +67,7 @@ export default {
     projectName: ''
   },
   components: {
+    MonacoEditor,
     codemirror
   },
   methods: {
@@ -114,7 +122,7 @@ export default {
 </script>
 
 <style>
-#editor{
+.editor{
     position: relative;
     height: calc(100% - 200px);
     width: 100%;
