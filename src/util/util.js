@@ -85,21 +85,22 @@ export default {
   },
   // 规范文件树的children和isSelected
   formatChildren: function (tree) {
-    if(tree.children == null) {
+    if(!tree.children) {
       tree.children = []
-      tree.isSelected = false
+      tree.isSelected = false;
+      tree.editable = false;
       return
     }
     this.format_recursion(tree.children)
   },
   format_recursion: function (children) {
-    if (children == null) {
-      children = []
+    if (!children) {
       return
     }
-    for (var i = 0; i < children.length; i++) {
-      children[i].isSelected = false
-      this.format_recursion(children[i])
+    for (let i = 0; i < children.length; i++) {
+      children[i].isSelected = false;
+      children[i].editable = false;
+      this.format_recursion(children[i].children);
     }
   },
 

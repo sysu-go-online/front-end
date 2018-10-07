@@ -30,12 +30,12 @@ export default {
         id: Response.data.id,
         type: Response.data.type,
         root: Response.data.root,
-        isSelected: Response.data.isSelected,
+        isSelected: false,
+        editable: false,
         children: Response.data.children
       };
       this.$utilHelper.formatChildren(tree);
       this.$utilHelper.treeSort(tree);
-      console.log(tree);
       this.treeData = tree;
     });
   },

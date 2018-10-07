@@ -6,13 +6,18 @@
         <div class="menu-icon"><svg class="icon icon-file" @click="showProjectView"><use xlink:href="#icon-file"></use></svg></div>
         <div class="menu-icon"><svg class="icon icon-terminal" @click="showShell"><use xlink:href="#icon-terminal"></use></svg></div>
       </div>
-      <div id="main_function" @mousemove="moveHandler" @mousedown="downHandler" @mouseup="upHandler">
-        <div id="file_tree">
-          <project-view @openfile="openFile" v-bind:style="{width: projectViewWidth}" ref="projectView"></project-view>
+      <div id="main_function">
+        <div id="file_tree" v-bind:class="{'project-view-hide': hideProjectView}">
+          <project-view @openfile="openFile" ref="projectView"></project-view>
         </div>
-        <div id="command_line" v-bind:style="{left: commandLineLeft, width: commandLineWidth}">
-          <editor :fileData="this.fileData" :projectName="this.projectName" v-bind:style="{height: editorHeight}"></editor>
-          <shell v-bind:style="{height: shellHeight}" :height="shellHeight" :width="commandLineWidth"></shell>
+        <div id="command_line" v-bind:class="{'project-view-hide': hideProjectView}">
+          <editor v-if="openEditor" :fileData="this.fileData" :projectName="this.projectName" ref='editor'></editor>
+          <div class="shell-section" v-bind:class="{'shell-hide': hideShell}">
+            <shell class="shell-section-shell" @dbname="resolveDbname"></shell>
+            <div class="shell-section-info">
+              <div>二级域名：{{this.subdomain}}</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -36,166 +41,42 @@ export default {
   },
   data () {
     return {
-      projectViewWidth: '200px',
-      commandLineLeft: '200px',
-      editorHeight: 'calc(100% - 200px)',
       shellHeight: '200px',
       fileData: {},
       projectName: '',
-      commandLineWidth: 'calc(100% - 200px)',
-      leftResizeLineX: 0,
-      leftResizeLineY: 0,
-      leftResizeLineYWidth: 0,
-      rightResizeLineX: 0,
-      rightResizeLineY: 0,
-      rightResizeLineXWidth: 0,
-      onLeftLine: false,
-      onRightLine: false,
-      mouseState: 'up'
+      mouseState: 'up',
+      subdomain: '',
+      hideProjectView: false,
+      hideShell: false,
+      openEditor: false
     };
   },
-  beforeCreate: function () {
-
-  },
-  created: function () {
-
-  },
-  mounted: function () {
-    var coordinate = this.getCoordinate('file_tree');
-    this.leftResizeLineX = coordinate[0];
-    this.leftResizeLineY = coordinate[1];
-    this.leftResizeLineYWidth = coordinate[3];
-
-    coordinate = this.getCoordinate('editor');
-    this.rightResizeLineX = coordinate[0];
-    this.rightResizeLineY = coordinate[1];
-    this.rightResizeLineXWidth = coordinate[2];
-
-    this.contextMenuTarget = document.getElementById('file_tree');
-    console.log(this.contextMenuTarget);
-  },
-  updated: function () {
-    var coordinate = this.getCoordinate('file_tree');
-    this.leftResizeLineX = coordinate[0];
-    this.leftResizeLineY = coordinate[1];
-    this.leftResizeLineYWidth = coordinate[3];
-
-    coordinate = this.getCoordinate('editor');
-    this.rightResizeLineX = coordinate[0];
-    this.rightResizeLineY = coordinate[1];
-    this.rightResizeLineXWidth = coordinate[2];
-
-    console.log(this.leftResizeLineX);
-    console.log(this.rightResizeLineY);
-  },
   methods: {
+    resolveDbname: function (dbname) {
+      this.subdomain = dbname;
+    },
     showProjectView: function () {
-      // var coordinate = this.getCoordinate('file_tree')
-      if (this.projectViewWidth !== '0') {
-        this.projectViewWidth = '0';
-        this.commandLineLeft = '0';
-        this.commandLineWidth = '100%';
-      } else {
-        this.projectViewWidth = '200px';
-        this.commandLineLeft = '200px';
-        this.commandLineWidth = 'calc(100% - 200px)';
-      }
+      this.hideProjectView = !this.hideProjectView;
+      this.$nextTick(() => {
+        this.$refs.editor.$refs.editor.getMonaco().layout();
+      });
     },
     showShell: function () {
-      if (this.shellHeight !== '0') {
-        this.editorHeight = '100%';
-        this.shellHeight = '0';
-      } else {
-        this.editorHeight = 'calc(100% - 200px)';
-        this.shellHeight = '200px';
-      }
+      this.hideShell = !this.hideShell;
     },
     openFile: function (data, projectName) {
-      this.fileData = data;
-      this.projectName = projectName;
-    },
-    /* ------------------------------ 可拖动工作区函数 ---------------------------- */
-    getCoordinate: function (id) {
-      var p = window.$('#' + id).offset();
-      var w = window.$('#' + id).width();
-      var h = window.$('#' + id).height();
-      return [p.left + w, p.top + h, w, h];
-    },
-    moveHandler: function (e) {
-      var X = e.clientX;
-      var Y = e.clientY;
-
-      // 在projectview和editor\terminal之间
-      if (X >= this.leftResizeLineX - 5 && X <= this.leftResizeLineX + 5 &&
-        Y >= this.leftResizeLineY - this.leftResizeLineYWidth && Y <= this.leftResizeLineY &&
-        this.mouseState !== 'down') {
-        window.$('#main_function').addClass('col-resize');
-        this.onLeftLine = true;
-        return;
-      // 在editor和shell之间
-      } else if (X >= this.rightResizeLineX - this.rightResizeLineXWidth && X <= this.rightResizeLineX &&
-        Y >= this.rightResizeLineY - 10 && Y < this.rightResizeLineY + 10 &&
-        this.mouseState !== 'down') {
-        window.$('#main_function').addClass('row-resize');
-        this.onRightLine = true;
-      } else {
-        // 其他情况，判断是否需要修改onRightLine，onLeftLine
-        if (this.mouseState === 'up') {
-          this.onLeftLine = false;
-          this.onRightLine = false;
-          window.$('#main_function').removeClass('col-resize');
-          window.$('#main_function').removeClass('row-resize');
-          return;
-        }
-      }
-
-      // 以上位置或者在其他位置，但是onmousedown
-      var reg = /\d+/g;
-      // 拖动改变project-view和command_line
-      if (this.mouseState === 'down' && this.onLeftLine) {
-        var sub = X - this.leftResizeLineX;
-        this.leftResizeLineX = X;
-        this.projectViewWidth = (parseInt(this.projectViewWidth.match(reg)[0]) + sub) + 'px';
-        this.commandLineWidth = 'calc(100% - ' + this.projectViewWidth + ')';
-        console.log(this.commandLineWidth);
-        // 设置command_line left值
-        this.commandLineLeft = this.projectViewWidth;
-
-        if (parseInt(this.projectViewWidth.match(reg)[0]) < 100) {
-          this.projectViewWidth = '0';
-          this.commandLineLeft = '0';
-          this.commandLineWidth = '100%';
-        }
-      // 拖动改变editor和shell
-      } else if (this.mouseState === 'down' && this.onRightLine) {
-        // 修改div大小
-        sub = Y - this.rightResizeLineY;
-        this.rightResizeLineY = Y;
-        this.shellHeight = (parseInt(this.shellHeight.match(reg)[0]) - sub) + 'px';
-        this.editorHeight = 'calc(100% - ' + this.shellHeight + ')';
-
-        if (parseInt(this.shellHeight.match(reg)[0]) < 100) {
-          this.editorHeight = '100%';
-          this.shellHeight = '0';
-        }
-      }
-    },
-    downHandler: function (e) {
-      if (this.onLeftLine || this.onRightLine) {
-        this.mouseState = 'down';
-      }
-    },
-    upHandler: function (e) {
-      this.mouseState = 'up';
-      this.onLeftLine = false;
-      this.onRightLine = false;
+      this.openEditor = true;
+      this.$nextTick(() => {
+        this.fileData = data;
+        this.projectName = projectName;
+      });
     }
   }
 };
 
 </script>
 
-<style>
+<style lang="scss">
 #menu {
     position: absolute;
     left: 0;
@@ -247,12 +128,17 @@ export default {
   margin: 0;
   height: 100%;
   background-color:  #292929;
+  transition: transform 0.35s;
+  width: 200px;
 }
 #command_line{
   position: absolute;
   height: 100%;
   box-sizing: border-box;
-  background: #000;
+  background: #1e1e1e;
+  transition: transform 0.35s;
+  left: 200px;
+  width: calc(100% - 200px);
 }
 .col-resize {
   cursor: col-resize;
@@ -260,7 +146,45 @@ export default {
 .row-resize {
   cursor: row-resize;
 }
+.shell-section {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  height: 200px;
+  .shell-section-info {
+    width: 195px;
+    display: inline-block;
+    height: 200px;
+    background: #1e1e1e;
+    vertical-align: top;
+    color: white;
+  }
+  .shell-section-shell {
+    width: calc(100% - 200px) !important;
+    display: inline-block;
+  }
+}
+.shell-section-shell {
+  width: calc(100% - 200px) !important;
+  display: inline-block;
+}
+#file_tree.project-view-hide {
+  transform: translate(-200px,0px);
+}
+#command_line.project-view-hide {
+  transform: translate(-200px,0px);
+  width: 100%;
+}
+#command_line.shell-hide {
 
+}
+.shell-section.shell-hide {
+  display: none;
+}
+#editor {
+  height: 100%;
+  width: 100%;
+}
 /*-------------右键弹窗样式---------------- */
 a {
   color: #333;

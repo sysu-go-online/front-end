@@ -1,19 +1,15 @@
 <template>
   <div class="tree-menu" :style="{width: menuWidth}">
-    <div :class="{selected: this.treeNode.isSelected, node_style: !this.treeNode.isSelected, selected_hover: this.treeNode.isSelected }">
-      <div :style="indent" class="lable_class" @click="handleClick">
+    <div :class="{selected: this.treeNode.isSelected, node_style: !this.treeNode.isSelected, selected_hover: this.treeNode.isSelected }" @contextmenu.prevent="Opencontextmenu" @click="handleClick">
+      <div :style="indent" class="lable_class">
         <svg v-if="this.treeNode.type=='dir'" :style="this.arrow_rotate" class="icon icon-play3"><use xlink:href="#icon-play3"></use></svg>
         <svg :class="iconType"><use :xlink:href="iconName"></use></svg>
-        <span v-if="!this.edit_status">{{ this.treeNode.name }}</span>
-        <input v-if="this.edit_status" class="node_input" v-model="newName" @keyup.enter="onEnter" autofocus="autofocus"/>
+        <span v-if="!this.treeNode.editable">{{ this.treeNode.name }}</span>
+        <input v-if="this.treeNode.editable" class="node_input" v-model="newName" @keyup.enter="onEnter" autofocus="autofocus"/>
       </div>
-      <div v-if="!this.treeNode.root" class="span_func_icon" :style="indent">
-        <svg class="icon icon-modify" @click="change_node"><use xlink:href="#icon-modify"></use></svg>
-        <svg class="icon icon-delete" style="margin-left:5px;" @click="delete_node"><use xlink:href="#icon-delete"></use></svg>
       </div>
-    </div>
     <tree-menu
-      v-if="showChildren || treeNode.root"
+      v-if="showChildren"
       v-for="node in this.treeNode.children"
       @selectNode="selectNode"
       :key = "node.id"
@@ -25,6 +21,7 @@
       @deleteNode="deleteNode"
       @changeClickable="changeClickable"
       @openFile="openFile"
+      @contextmenu="Opencontextmenu"
     >
     </tree-menu>
   </div>
@@ -75,6 +72,9 @@ export default {
     }
   },
   methods: {
+    Opencontextmenu: function (evt, node = this.treeNode) {
+      this.$emit('contextmenu', evt, node);
+    },
     handleClick: function () {
       // 判断是否可以点击
       if (!this.clickable) {
@@ -91,18 +91,17 @@ export default {
       } else {
         this.arrow_rotate = { transform: `none` };
       }
-      if (this.treeNode.type !== 'dir') {
+      if (this.treeNode.type === 'file') {
         this.$emit('openFile', this.treeNode);
       }
     },
     // 修改当前节点name
     change_node: function () {
-      this.edit_status = 1;
+      this.treeNode.editable = 1;
       this.$emit('changeClickable');
     },
     onEnter: function () {
       this.$emit('changeNode', this.treeNode, this.newName);
-      this.edit_status = 0;
       this.newName = '';
     },
     // 删除当前节点

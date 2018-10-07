@@ -23,12 +23,12 @@ export default {
       projectName: ''
     }
   },
-  props:['height', 'width'],
   methods: {
     Xterm: function() {
       this.$terminal.applyAddon(fit);
       var term = new this.$terminal({
-        cursorBlink: true
+        cursorBlink: true,
+        rows: 12
       })
       term.open(this.$refs.xterm)
       if (term._initialized) {
@@ -57,9 +57,9 @@ export default {
         return
       }
       let hostname = window.location.hostname;
-      that.ws = new WebSocket('ws://' + hostname + '/api/ws/tty');
+      that.ws = new WebSocket('ws://' + '120.79.0.17' + '/api/ws/tty');
       that.ws.onopen = function(evt) {
-        console.log(that.projectName);
+        // console.log(that.projectName);
         that.ws.send(JSON.stringify({
           'JWT': that.$cookie.get('jwt'),
           'Project': that.projectName,
@@ -68,10 +68,20 @@ export default {
         // that.term.writeln('链接建立成功');
       }
       that.ws.onmessage = function (evt) {
+        console.log(evt.data);
         let res = JSON.parse(evt.data);
-        if (res.err) {
-          if (res.err == "websocket: close 1006 (abnormal closure): unexpected EOF") return;
-          that.term.writeln(res.err);
+        if (res.Type == 'error') {
+          // if (res.err == "websocket: close 1006 (abnormal closure): unexpected EOF") return;
+          that.term.writeln(res.msg);
+          return;
+        }
+        if (res.Type == 'tty') {
+          that.term.writeln(res.msg);
+          return;
+        }
+        if (res.Type == 'dname') {
+          console.log(res.msg);
+          that.$emit('dbname', res.msg);
           return;
         }
         that.term.write(res.msg);
@@ -97,6 +107,7 @@ export default {
   mounted() {
     var that = this;
     this.term = this.Xterm();
+    console.log(this.term);
     this.term.on('key', function(key, ev) {
       // TODO: Add event when different key was hit
       // Store command if the connection has not be established
@@ -104,8 +115,8 @@ export default {
         // When meet Ctrl+C clear all the command
         if (ev.keyCode == 67) {
           that.term.prompt();
-          that.command.length = 0;
-          return;
+          that.command = '';
+          return; 
         }
 
         // Send command when meet return
@@ -123,17 +134,13 @@ export default {
         // Delete
         if (ev.keyCode == 8) {
           // Do not delete the prompt
-          if (that.term.buffer.x > 2) {
-            var len = that.command.length
-            if(that.command.charCodeAt(len - 1) > 255) {
-              that.term.write('\b \b')
-              that.term.write('\b \b')
-            } else {
-              that.term.write('\b \b')
-            }
-            that.command = that.command.slice(0, len - 1)
+          if (that.command != 0) {
+            that.term.write('\b \b');
+            let len = that.command.length
+            that.command = that.command.slice(0, len - 1);
+            console.log(that.command);
           }
-          return
+          return;
         }
       } else {
         if (that.ws.readyState == 1) {

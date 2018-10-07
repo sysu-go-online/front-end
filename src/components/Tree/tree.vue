@@ -4,7 +4,7 @@
       <svg class="icon icon-file-add" @click="addFlie"><use xlink:href="#icon-file-add"></use></svg>
       <svg class="icon icon-folder-add" style="margin-left:5px" @click="addFolder"><use xlink:href="#icon-folder-add"></use></svg>
     </div>
-    <div id="file_data" @contextmenu.prevent="$refs.menu.open">
+    <div id="file_data">
       <tree-menu
         @selectNode="selectNode"
         :nodeData="tree"
@@ -15,6 +15,8 @@
         @deleteNode="deleteNode"
         @changeClickable="changeClickable"
         @openFile="openFile"
+        @contextmenu="Opencontextmenu"
+        ref="topTree"
       >
       </tree-menu>
     </div>
@@ -22,6 +24,7 @@
       <ul>
         <li @click="addFlie">创建文件</li>
         <li @click="addFolder">创建文件夹</li>
+        <li @click="changeEditable">重命名</li>
         <li @click="deleteNodeFunc">删除</li>
       </ul>
     </vue-context>
@@ -58,6 +61,8 @@ export default {
   },
   mounted: function () {
     window.addEventListener('scroll', this.updateMenuWidth, true);
+    this.$refs.topTree.showChildren = true;
+    this.$refs.topTree.arrow_rotate = { transform: `rotate(90deg)` };
   },
   methods: {
     // 选中某个文件、文件夹或取消选中
@@ -78,6 +83,14 @@ export default {
     // 修改节点的可点击性
     changeClickable: function () {
       this.clickable = !this.clickable;
+    },
+    changeEditable: function () {
+      this.clickable = !this.clickable;
+      this.$utilHelper.getNode(this.tree, this.selNode.id).node.editable = true;
+    },
+    Opencontextmenu: function (evt, node) {
+      this.selectNode(node);
+      this.$refs.menu.open(evt);
     },
     // 打开文件
     openFile: function (node) {
@@ -109,10 +122,8 @@ export default {
         this.$emit('input', this.tree);
         // 获取filepath, 触发父组件数据更新
         node.name = name;
+        this.$utilHelper.getNode(this.tree, node.id).node.editable = false;
 
-        // var isSelected = this.selNode && this.selNode.id === node.id;
-        // var isDir = node.type === 'dir';
-        // this.$emit('SaveEdit', name, filePath, isSelected, isDir)
         this.$dialog.alert('重命名成功');
       });
     },
@@ -141,7 +152,8 @@ export default {
         return;
       }
       let that = this;
-      if (undefined === this.$utilHelper.getNode(this.tree, this.selNode.id).node.children) {
+      // console.log(this.$utilHelper.getNode(this.tree, this.selNode.id).node);
+      if (!this.$utilHelper.getNode(this.tree, this.selNode.id).node.children) {
         this.$utilHelper.getNode(this.tree, this.selNode.id).node.children = [];
       }
       var children = this.$utilHelper.getNode(this.tree, this.selNode.id).node.children;
@@ -150,7 +162,8 @@ export default {
         id: this.$utilHelper.generateUUID(),
         type: 'file',
         isSelected: false,
-        children: []
+        children: [],
+        editable: false
       };
       children.push(newNode);
       this.$utilHelper.childrenSort(children);
@@ -173,7 +186,7 @@ export default {
         return;
       }
       let that = this;
-      if (undefined === this.$utilHelper.getNode(this.tree, this.selNode.id).node.children) {
+      if (!this.$utilHelper.getNode(this.tree, this.selNode.id).node.children) {
         this.$utilHelper.getNode(this.tree, this.selNode.id).node.children = [];
       }
       var children = this.$utilHelper.getNode(this.tree, this.selNode.id).node.children;
@@ -183,7 +196,8 @@ export default {
         id: this.$utilHelper.generateUUID(),
         type: 'dir',
         isSelected: false,
-        children: []
+        children: [],
+        editable: false
       };
       children.push(newNode);
       this.$utilHelper.childrenSort(children);
@@ -197,6 +211,24 @@ export default {
           'Authorization': that.$cookie.get('jwt'),
           'Content-Type': 'application/json'
         }
+      }).catch(() => {
+        this.$dialog.alert('创建失败');
+        this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files', {
+          headers: {'Authorization': that.$cookie.get('jwt')}
+        }).then(Response => {
+          var tree = {
+            name: Response.data.name,
+            id: Response.data.id,
+            type: Response.data.type,
+            root: Response.data.root,
+            isSelected: false,
+            editable: false,
+            children: Response.data.children
+          };
+          this.$utilHelper.formatChildren(tree);
+          this.$utilHelper.treeSort(tree);
+          this.tree = tree;
+        });
       });
       // this.$emit('input', this.tree)
     },

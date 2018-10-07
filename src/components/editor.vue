@@ -15,7 +15,7 @@
         v-model="code"
         language="cpp"
         theme="vs-dark"
-        @change="updateFunc"
+        ref="editor"
       />
     </div>
   </div>
@@ -23,13 +23,6 @@
 
 <script>
 import MonacoEditor from 'vue-monaco';
-// require component
-import { codemirror } from 'vue-codemirror';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/mode/go/go.js';
-import 'codemirror/theme/mbo.css';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/edit/closebrackets.js';
 
 export default {
   name: 'Editor',
@@ -46,7 +39,6 @@ export default {
         lineWrapping: false,
         lineNumbers: true,
         line: true
-        // more codemirror options, 更多 codemirror 的高级配置...
       },
       file: '',
       filedata: this.fileData,
@@ -62,8 +54,7 @@ export default {
     projectName: ''
   },
   components: {
-    MonacoEditor,
-    codemirror
+    MonacoEditor
   },
   methods: {
     updateFunc (newCode, evt) {
@@ -106,7 +97,7 @@ export default {
   watch: {
     fileData: {
       handler: function (val, oldVal) {
-        console.log(JSON.stringify(val));
+        // console.log(JSON.stringify(val));
         this.filedata = val;
         this.file = val.name;
         this.filepath = val.filepath;
@@ -122,7 +113,7 @@ export default {
 <style>
 .editor{
     position: relative;
-    height: calc(100% - 200px);
+    height: 100%;
     width: 100%;
     background: #141414;
     box-sizing: border-box;
