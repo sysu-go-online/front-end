@@ -76,7 +76,7 @@ export default {
           return;
         }
         if (res.Type == 'tty') {
-          that.term.writeln(res.msg);
+          that.term.write(res.msg);
           return;
         }
         if (res.Type == 'dname') {
@@ -84,7 +84,6 @@ export default {
           that.$emit('dbname', res.msg);
           return;
         }
-        that.term.write(res.msg);
       }
       that.ws.onclose = function(evt) {
         // that.term.writeln('链接已关闭，输入命令重新建立链接');
