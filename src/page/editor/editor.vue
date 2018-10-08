@@ -15,7 +15,7 @@
           <div class="shell-section" v-bind:class="{'shell-hide': hideShell}">
             <shell class="shell-section-shell" @dbname="resolveDbname"></shell>
             <div class="shell-section-info">
-              <div>二级域名：<a :href="subdomain">{{this.subdomain}}</a></div>
+              <div>二级域名：<a target="_blank" :href="subdomain">{{this.subdomain}}</a></div>
             </div>
           </div>
         </div>
