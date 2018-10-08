@@ -15,7 +15,7 @@
           <div class="shell-section" v-bind:class="{'shell-hide': hideShell}">
             <shell class="shell-section-shell" @dbname="resolveDbname"></shell>
             <div class="shell-section-info">
-              <div>二级域名：{{this.subdomain}}</div>
+              <div>二级域名：<a :href="subdomain">{{this.subdomain}}</a></div>
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@ export default {
   },
   methods: {
     resolveDbname: function (dbname) {
-      this.subdomain = dbname;
+      this.subdomain = 'http://' + dbname;
     },
     showProjectView: function () {
       this.hideProjectView = !this.hideProjectView;
