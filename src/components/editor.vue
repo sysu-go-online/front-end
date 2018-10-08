@@ -9,11 +9,11 @@
       </span>
       <span id="save"><input type="button" value="保存" id="save-button" @click="Save"></span>
     </div>
-    <div id="edit-area">
+    <div id="edit-area" @keyup.ctrl.83.stop="Save" @keydown.ctrl.83.prevent>
       <MonacoEditor
         class="editor"
         v-model="code"
-        language="cpp"
+        language="go"
         theme="vs-dark"
         ref="editor"
       />
@@ -38,7 +38,8 @@ export default {
         theme: 'mbo',
         lineWrapping: false,
         lineNumbers: true,
-        line: true
+        line: true,
+        language: 'go'
       },
       file: '',
       filedata: this.fileData,
@@ -90,6 +91,10 @@ export default {
         headers: {'Authorization': that.$cookie.get('jwt')}
       }).then(Response => {
         that.code = Response.data.toString();
+        // if (that.filepath.match(/.cpp$/)) {
+        //   that.language = 'cpp';
+        //   that.$refs.editor.$refs.editor.getMonaco().layout();
+        // }
       });
     },
     closeFile: function () {}
