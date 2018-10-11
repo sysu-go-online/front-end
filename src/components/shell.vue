@@ -28,7 +28,7 @@ export default {
       this.$terminal.applyAddon(fit);
       var term = new this.$terminal({
         cursorBlink: true,
-        rows: 12
+        rows: 10
       })
       term.open(this.$refs.xterm)
       if (term._initialized) {
