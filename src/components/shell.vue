@@ -61,29 +61,32 @@ export default {
       that.ws.onopen = function(evt) {
         // console.log(that.projectName);
         that.ws.send(JSON.stringify({
-          'JWT': that.$cookie.get('jwt'),
-          'Project': that.projectName,
-          'Command': command
+          'jwt': that.$cookie.get('jwt'),
+          'project': that.projectName,
+          'msg': '\n',
+          'language': 0,
+          'type': 0
         }));
         // that.term.writeln('链接建立成功');
       }
       that.ws.onmessage = function (evt) {
         console.log(evt.data);
         let res = JSON.parse(evt.data);
-        if (res.Type == 'error') {
+        if (!res.ok) {
           // if (res.err == "websocket: close 1006 (abnormal closure): unexpected EOF") return;
+          that.term.write('error occured: ')
           that.term.writeln(res.msg);
           return;
         }
-        if (res.Type == 'tty') {
+        if (res.ok) {
           that.term.write(res.msg);
           return;
         }
-        if (res.Type == 'dname') {
-          console.log(res.msg);
-          that.$emit('dbname', res.msg);
-          return;
-        }
+        // if (res.Type == 'dname') {
+        //   console.log(res.msg);
+        //   that.$emit('dbname', res.msg);
+        //   return;
+        // }
       }
       that.ws.onclose = function(evt) {
         // that.term.writeln('链接已关闭，输入命令重新建立链接');
@@ -110,74 +113,74 @@ export default {
     this.term.on('key', function(key, ev) {
       // TODO: Add event when different key was hit
       // Store command if the connection has not be established
-      if (!that.ws) {
-        // When meet Ctrl+C clear all the command
-        if (ev.keyCode == 67) {
-          that.term.prompt();
-          that.command = '';
-          return; 
-        }
+      // if (!that.ws) {
+      //   // When meet Ctrl+C clear all the command
+      //   if (ev.keyCode == 67) {
+      //     that.term.prompt();
+      //     that.command = '';
+      //     return; 
+      //   }
 
-        // Send command when meet return
-        if (ev.keyCode == 13) {
-          if (that.command.length == 0) {
-            that.term.prompt();
-          } else {
-            that.term.write('\r\n');
+      //   // Send command when meet return
+      //   if (ev.keyCode == 13) {
+      //     if (that.command.length == 0) {
+      //       that.term.prompt();
+      //     } else {
+      //       that.term.write('\r\n');
             that.terminalFlow(that.command, that);
-            that.command = '';
-          }
-          return;
-        }
+      //       that.command = '';
+      //     }
+      //     return;
+      //   }
 
-        // Delete
-        if (ev.keyCode == 8) {
-          // Do not delete the prompt
-          if (that.command != 0) {
-            that.term.write('\b \b');
-            let len = that.command.length;
-            that.command = that.command.slice(0, len - 1);
-          }
-          return;
-        }
-      } else {
-        if (that.ws.readyState == 1) {
+      //   // Delete
+      //   if (ev.keyCode == 8) {
+      //     // Do not delete the prompt
+      //     if (that.command != 0) {
+      //       that.term.write('\b \b');
+      //       let len = that.command.length;
+      //       that.command = that.command.slice(0, len - 1);
+      //     }
+      //     return;
+      //   }
+      // } else {
+        // if (that.ws.readyState == 1) {
           // TODO: Send content according to the key code
           that.terminalSend(key);
           
-        } else if (that.ws.readyState == 0) {
-          // TODO: Store message when the ws is connecting and send message when the connection has been send
-        }
-      }
+      //   } else if (that.ws.readyState == 0) {
+      //     // TODO: Store message when the ws is connecting and send message when the connection has been send
+      //   }
+      // }
     })
 
     this.term.on('paste', function(data, ev) {
       that.command += data
       that.term.write(data)
     })
-    this.term.on('data', function(str) {
-      if (!that.ws) {
-        var pat = /.*/
-        //禁止添加上下左右移动字符
-        if(str == '[A' || str == '[B' || str == '[C' || str == '[D') {
-          that.term.write(str)
-          return
-        }
-        //禁止输入其他非法字符
-        if(pat.test(str) || str == '\n' || str == '\r' || str == that.key) {
-          return
-        }
-        // Add valid str
-        that.command += str
-        that.term.write(str)
-      } else {
-        if (that.ws.readyState == 1) {
-          // that.terminalFlow(str, that)
-        } else if (that.ws.readyState == 0) {
-          // TODO: Store message when the ws is connecting and send message when the connection has been send
-        }
-      }
-    })
+    // this.term.on('data', function(str) {
+    //   if (!that.ws) {
+    //     var pat = /.*/
+    //     //禁止添加上下左右移动字符
+    //     if(str == '[A' || str == '[B' || str == '[C' || str == '[D') {
+    //       that.term.write(str)
+    //       return
+    //     }
+    //     //禁止输入其他非法字符
+    //     if(pat.test(str) || str == '\n' || str == '\r' || str == that.key) {
+    //       return
+    //     }
+    //     // Add valid str
+    //     that.command += str
+    //     that.term.write(str)
+    //   } else {
+    //     if (that.ws.readyState == 1) {
+    //       // that.terminalFlow(str, that)
+    //     } else if (that.ws.readyState == 0) {
+    //       // TODO: Store message when the ws is connecting and send message when the connection has been send
+    //     }
+    //   }
+    // })
   },
   watch: {
     height: {
