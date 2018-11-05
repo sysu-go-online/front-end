@@ -5,10 +5,63 @@
       <div id="menu">
         <div class="menu-icon"><svg class="icon icon-file" @click="showProjectView"><use xlink:href="#icon-file"></use></svg></div>
         <div class="menu-icon"><svg class="icon icon-terminal" @click="showShell"><use xlink:href="#icon-terminal"></use></svg></div>
+        <mu-menu placement="right-start" >
+          <mu-button style="padding: 0px; width:50px;" color="black">文件</mu-button>
+          <mu-list slot="content">
+            <mu-list-item button>
+              <mu-list-item-title @click='addFlie'>新建文件</mu-list-item-title>
+            </mu-list-item>
+            <mu-list-item button>
+              <mu-list-item-title @click='addFolder'>新建文件夹</mu-list-item-title>
+            </mu-list-item>
+            <mu-list-item button>
+              <mu-list-item-title>保存</mu-list-item-title>
+            </mu-list-item>
+            <mu-list-item button>
+              <mu-list-item-title>另存为</mu-list-item-title>
+            </mu-list-item>
+          </mu-list>
+        </mu-menu>
+        <mu-menu placement="right-start" >
+          <mu-button color="black">编辑</mu-button>
+          <mu-list slot="content">
+            <mu-list-item button>
+              <mu-list-item-title>撤销</mu-list-item-title>
+            </mu-list-item>
+            <mu-list-item button>
+              <mu-list-item-title>恢复</mu-list-item-title>
+            </mu-list-item>
+            <mu-list-item button>
+              <mu-list-item-title>删除</mu-list-item-title>
+            </mu-list-item>
+          </mu-list>
+        </mu-menu>
+        <mu-menu placement="right-start" >
+          <mu-button color="black">调试</mu-button>
+          <mu-list slot="content">
+            <mu-list-item button>
+              <mu-list-item-title>编译</mu-list-item-title>
+            </mu-list-item>
+            <mu-list-item button>
+              <mu-list-item-title>运行</mu-list-item-title>
+            </mu-list-item>
+            <mu-list-item button>
+              <mu-list-item-title>编译并运行</mu-list-item-title>
+            </mu-list-item>
+          </mu-list>
+        </mu-menu>
+        <mu-menu placement="right-start" >
+          <mu-button color="black">帮助</mu-button>
+          <mu-list slot="content">
+            <mu-list-item button>
+              <mu-list-item-title>？</mu-list-item-title>
+            </mu-list-item>
+          </mu-list>
+        </mu-menu>
       </div>
       <div id="main_function">
         <div id="file_tree" v-bind:class="{'project-view-hide': hideProjectView}">
-          <project-view @openfile="openFile" @deleteFile="deleteFile" @renameFile="renameFile" v-model="this.currentFile" ref="projectView"></project-view>
+          <project-view @openfile="openFile" @deleteFile="deleteFile" @renameFile="renameFile" v-model="this.currentFile" ref="projectView"></project-view> 
         </div>
         <div id="command_line" v-bind:class="{'project-view-hide': hideProjectView}">
           <editor v-if="openEditor" :projectName="this.projectName" :currentFile="this.currentFile" :toDeleteFileId="this.toDeleteFileId" :toRenameFile="this.toRenameFile" @openfile="openFile" @closeFile="closeFile" @nofileopen="closeEditor" ref='editor'></editor>
@@ -42,16 +95,19 @@ export default {
   data () {
     return {
       shellHeight: '200px',
+      //fileData: {},
       projectName: '',
-      currentFile: {},
-      openFileIds: [],
-      toDeleteFileId: null,
-      toRenameFile: {},
+      currentFile: {}, 
+      openFileIds: [],  
+      toDeleteFileId: null, 
+      toRenameFile: {}, 
       mouseState: 'up',
       subdomain: '',
       hideProjectView: false,
       hideShell: false,
-      openEditor: false
+      openEditor: false,
+      isAddFile: false,
+      isAddFolder: false,
     };
   },
   methods: {
@@ -67,41 +123,53 @@ export default {
     showShell: function () {
       this.hideShell = !this.hideShell;
     },
-    closeEditor: function () {
-      this.openEditor = false;
-      this.currentFile = {};
-    },
-    // TOFIX: 目录与标签栏高亮同步还有点问题
+    closeEditor: function () { 
+      this.openEditor = false; 
+      this.currentFile = {}; 
+    }, 
+    // TOFIX: 目录与标签栏高亮同步还有点问题 
     openFile: function (data, projectName) {
-      if (!this.openEditor) {
-        this.openEditor = true;
-      }
+      //this.openEditor = true;
+      if (!this.openEditor) { 
+        this.openEditor = true;  
+      } 
       this.$nextTick(() => {
-        this.currentFile = data;
-        // 修改已打开文件的顺序
-        var index = this.openFileIds.indexOf(data.id);
-        if (index !== -1) {
-          this.openFileIds.splice(index, 1);
-        }
+        //this.fileData = data;
+        this.currentFile = data;  
+        // 修改已打开文件的顺序  
+        var index = this.openFileIds.indexOf(data.id);  
+        if (index !== -1) {  
+          this.openFileIds.splice(index, 1);  
+        } 
         this.projectName = projectName;
-        this.openFileIds.push(data.id);
+        this.openFileIds.push(data.id); 
       });
     },
-    closeFile: function (fileid) {
-      this.openFileIds.splice(this.openFileIds.indexOf(fileid), 1);
-    },
-    deleteFile: function (file) {
-      var index = this.openFileIds.indexOf(file.id);
-      if (index !== -1) {
-        this.openFileIds.splice(index, 1);
-        this.toDeleteFileId = file.id;
+    closeFile: function (fileid) { 
+      this.openFileIds.splice(this.openFileIds.indexOf(fileid), 1); 
+    }, 
+    deleteFile: function (file) { 
+      var index = this.openFileIds.indexOf(file.id); 
+      if (index !== -1) { 
+        this.openFileIds.splice(index, 1); 
+        this.toDeleteFileId = file.id; 
+      } 
+    }, 
+    renameFile: function (file) {  
+      var index = this.openFileIds.indexOf(file.id);  
+      if (index !== -1) { 
+        this.toRenameFile = file; 
       }
     },
-    renameFile: function (file) {
-      var index = this.openFileIds.indexOf(file.id);
-      if (index !== -1) {
-        this.toRenameFile = file;
-      }
+    //新建文件
+    addFlie: function () {
+      //isAddFile = true;
+      this.Projectview.tree.addFlie();
+    },
+    //新建文件夹
+    addFolder: function () {
+      //isAddFolder = true;
+      this.Projectview.tree.addFolder();
     }
   }
 };
@@ -163,7 +231,7 @@ export default {
   transition: transform 0.35s;
   width: 200px;
 }
-#command_line {
+#command_line{
   position: absolute;
   height: 100%;
   box-sizing: border-box;
@@ -220,5 +288,19 @@ export default {
 /*-------------右键弹窗样式---------------- */
 a {
   color: #333;
+}
+/*-------------菜单样式--------------*/
+
+.mu-button .mu-raised-button .mu-inverse {
+  width: 50px;
+}
+
+.mu-raised-button{
+  min-width: 50px;
+  font-size: 16px;
+}
+.mu-button-wrapper{
+  //width: 50px;
+  padding: 0px !important;
 }
 </style>
