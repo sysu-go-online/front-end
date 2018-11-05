@@ -30,16 +30,19 @@ export default {
   },
   created: function () {
     this.projectName = this.$route.params.projectname;
-    this.getTree(this);
+    this.getTree();
     this.initWebSocket();
   },
   methods: {
     initWebSocket: function () {
       this.ws = new WebSocket('ws://' + window.location.hostname + '/api/ws/dir');
+      let that = this;
+      // this.ws = new WebSocket('ws://' + 'go-online.heartublade.com' + '/api/ws/dir');
       this.ws.onopen = function (evt) {
-        this.ws.send(JSON.stringify({
-          'jwt': this.$cookie.get('jwt'),
-          'project': this.projectName
+        console.log(that.ws);
+        that.ws.send(JSON.stringify({
+          'jwt': that.$cookie.get('jwt'),
+          'project': that.projectName
         }));
       };
       this.ws.onmessage = function (evt) {
@@ -48,7 +51,7 @@ export default {
         // 若为有效信息
         if (data.ok) {
           // TO-IMPROVE: 直接拉整颗树，暴力更新
-          this.getTree(this);
+          that.getTree(this);
           // let path = data.path;
           // if (data.type === -1) { // 文件被创建成功
 
@@ -68,9 +71,9 @@ export default {
         }
       };
     },
-    getTree (that) {
+    getTree () {
       this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files', {
-        headers: {'Authorization': that.$cookie.get('jwt')}
+        headers: {'Authorization': this.$cookie.get('jwt')}
       }).then(Response => {
         console.log(Response);
         var tree = {
