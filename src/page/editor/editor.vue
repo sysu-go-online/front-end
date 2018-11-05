@@ -61,7 +61,7 @@
       </div>
       <div id="main_function">
         <div id="file_tree" v-bind:class="{'project-view-hide': hideProjectView}">
-          <project-view @openfile="openFile" @deleteFile="deleteFile" @renameFile="renameFile" v-model="this.currentFile" ref="projectView"></project-view> 
+          <project-view @openfile="openFile" @deleteFile="deleteFile" @renameFile="renameFile" v-model="this.currentFile" ref="projectView"></project-view>
         </div>
         <div id="command_line" v-bind:class="{'project-view-hide': hideProjectView}">
           <editor v-if="openEditor" :projectName="this.projectName" :currentFile="this.currentFile" :toDeleteFileId="this.toDeleteFileId" :toRenameFile="this.toRenameFile" @openfile="openFile" @closeFile="closeFile" @nofileopen="closeEditor" ref='editor'></editor>
@@ -95,19 +95,19 @@ export default {
   data () {
     return {
       shellHeight: '200px',
-      //fileData: {},
+      // fileData: {},
       projectName: '',
-      currentFile: {}, 
-      openFileIds: [],  
-      toDeleteFileId: null, 
-      toRenameFile: {}, 
+      currentFile: {},
+      openFileIds: [],
+      toDeleteFileId: null,
+      toRenameFile: {},
       mouseState: 'up',
       subdomain: '',
       hideProjectView: false,
       hideShell: false,
       openEditor: false,
       isAddFile: false,
-      isAddFolder: false,
+      isAddFolder: false
     };
   },
   methods: {
@@ -123,52 +123,52 @@ export default {
     showShell: function () {
       this.hideShell = !this.hideShell;
     },
-    closeEditor: function () { 
-      this.openEditor = false; 
-      this.currentFile = {}; 
-    }, 
-    // TOFIX: 目录与标签栏高亮同步还有点问题 
+    closeEditor: function () {
+      this.openEditor = false;
+      this.currentFile = {};
+    },
+    // TOFIX: 目录与标签栏高亮同步还有点问题
     openFile: function (data, projectName) {
-      //this.openEditor = true;
-      if (!this.openEditor) { 
-        this.openEditor = true;  
-      } 
+      // this.openEditor = true;
+      if (!this.openEditor) {
+        this.openEditor = true;
+      }
       this.$nextTick(() => {
-        //this.fileData = data;
-        this.currentFile = data;  
-        // 修改已打开文件的顺序  
-        var index = this.openFileIds.indexOf(data.id);  
-        if (index !== -1) {  
-          this.openFileIds.splice(index, 1);  
-        } 
+        // this.fileData = data;
+        this.currentFile = data;
+        // 修改已打开文件的顺序
+        var index = this.openFileIds.indexOf(data.id);
+        if (index !== -1) {
+          this.openFileIds.splice(index, 1);
+        }
         this.projectName = projectName;
-        this.openFileIds.push(data.id); 
+        this.openFileIds.push(data.id);
       });
     },
-    closeFile: function (fileid) { 
-      this.openFileIds.splice(this.openFileIds.indexOf(fileid), 1); 
-    }, 
-    deleteFile: function (file) { 
-      var index = this.openFileIds.indexOf(file.id); 
-      if (index !== -1) { 
-        this.openFileIds.splice(index, 1); 
-        this.toDeleteFileId = file.id; 
-      } 
-    }, 
-    renameFile: function (file) {  
-      var index = this.openFileIds.indexOf(file.id);  
-      if (index !== -1) { 
-        this.toRenameFile = file; 
+    closeFile: function (fileid) {
+      this.openFileIds.splice(this.openFileIds.indexOf(fileid), 1);
+    },
+    deleteFile: function (file) {
+      var index = this.openFileIds.indexOf(file.id);
+      if (index !== -1) {
+        this.openFileIds.splice(index, 1);
+        this.toDeleteFileId = file.id;
       }
     },
-    //新建文件
+    renameFile: function (file) {
+      var index = this.openFileIds.indexOf(file.id);
+      if (index !== -1) {
+        this.toRenameFile = file;
+      }
+    },
+    // 新建文件
     addFlie: function () {
-      //isAddFile = true;
+      // isAddFile = true;
       this.Projectview.tree.addFlie();
     },
-    //新建文件夹
+    // 新建文件夹
     addFolder: function () {
-      //isAddFolder = true;
+      // isAddFolder = true;
       this.Projectview.tree.addFolder();
     }
   }
