@@ -15,11 +15,11 @@
               <mu-radio v-model="form.isClone" class="radio" value="true" label="是"></mu-radio>
               <mu-radio v-model="form.isClone" class="radio" value="" label="否"></mu-radio>
             </mu-flex>
-            <mu-form-item prop="path" label="Remote Path" :rules="pathRules" v-if="form.isClone">
-              <mu-text-field v-model="form.path" prop="path"></mu-text-field>
-            </mu-form-item>
-            <mu-form-item prop="git_path" label="Git Path" :rules="gitpathRules">
+            <mu-form-item prop="git_path" label="Remote Path" :rules="gitpathRules" v-if="form.isClone">
               <mu-text-field v-model="form.git_path" prop="git_path"></mu-text-field>
+            </mu-form-item>
+            <mu-form-item prop="path" label="Path" :rules="pathRules">
+              <mu-text-field v-model="form.path" prop="path"></mu-text-field>
             </mu-form-item>
             <mu-flex justify-content="center" align-items="center">
               <mu-button round color="#9254fa" @click="addProject" class="btn">添加项目</mu-button>
@@ -45,12 +45,10 @@ export default {
         { validate: (val) => val.length <= 50, message: '描述长度小于50' }
       ],
       pathRules: [
-        { validate: (val) => !!val, message: '必须填写远程路径' },
-        { validate: (val) => val.length <= 40, message: '地址长度小于40' }
+        { validate: (val) => !!val, message: '必须填写远程路径' }
       ],
       gitpathRules: [
-        { validate: (val) => !!val, message: '必须填写git地址' },
-        { validate: (val) => val.length <= 40, message: '地址长度小于40' }
+        { validate: (val) => !!val, message: '必须填写git地址' }
       ],
       form: {
         name: '',
