@@ -1,6 +1,6 @@
 <template>
   <div class="tree-menu" :style="{width: menuWidth}">
-    <div :class="{selected: this.treeNode.isSelected, node_style: !this.treeNode.isSelected, selected_hover: this.treeNode.isSelected }" @contextmenu.prevent="Opencontextmenu" @click="handleClick">
+    <div :class="['hover-pointer', {selected: this.treeNode.isSelected, node_style: !this.treeNode.isSelected, selected_hover: this.treeNode.isSelected }]" @contextmenu.prevent="Opencontextmenu" @click="clickHandler">
       <div :style="indent" class="lable_class">
         <svg v-if="this.treeNode.type=='dir'" :style="this.arrow_rotate" class="icon icon-play3"><use xlink:href="#icon-play3"></use></svg>
         <svg :class="iconType"><use :xlink:href="iconName"></use></svg>
@@ -29,6 +29,7 @@
 
 <script>
 export default {
+  name: 'tree-menu',
   props: ['depth', 'nodeData', 'clickable', 'menuWidth'],
   data: function () {
     return {
@@ -41,7 +42,6 @@ export default {
       treeNode: JSON.parse(JSON.stringify(this.nodeData))
     };
   },
-  name: 'tree-menu',
   computed: {
     indent () {
       return { transform: `translate(${this.depth * 20}px)` };
@@ -75,7 +75,7 @@ export default {
     Opencontextmenu: function (evt, node = this.treeNode) {
       this.$emit('contextmenu', evt, node);
     },
-    handleClick: function () {
+    clickHandler: function () {
       // 判断是否可以点击
       if (!this.clickable) {
         return;
@@ -130,6 +130,7 @@ export default {
       handler: function (val, oldval) {
         this.treeNode = JSON.parse(JSON.stringify(val));
       },
+      // 深层监听
       deep: true
     }
   }
@@ -144,6 +145,9 @@ export default {
 }
 .selected {
   background-color: rgb(172, 172, 172);
+}
+.hover-pointer {
+  cursor: pointer;
 }
 .node_style:hover {
   background-color: rgb(228, 228, 228);
