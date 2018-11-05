@@ -46,20 +46,17 @@ export default {
       term.writeln('Type some keys and commands to play around.')
       term.writeln('输入命令以建立链接')
       term.writeln('')
-      term.prompt()
+      this.terminalFlow(this)
+      // term.prompt()
 
       return term
     },
-    terminalFlow: function(command, that) {
-      if (that.ws != null) {
-        // 如果已经存在ws连接，则直接往已有的ws中写入内容
-        that.ws.send(command)
-        return
-      }
+    terminalFlow: function(that) {
       let hostname = window.location.hostname;
+      hostname = "go-online.heartublade.com"
       that.ws = new WebSocket('ws://' + hostname + '/api/ws/tty');
       that.ws.onopen = function(evt) {
-        // console.log(that.projectName);
+        console.log(that.projectName);
         that.ws.send(JSON.stringify({
           'jwt': that.$cookie.get('jwt'),
           'project': that.projectName,
@@ -99,7 +96,11 @@ export default {
     },
     terminalSend: function (command) {
       this.ws.send(JSON.stringify({
-        'Command': command
+        // 'jwt': that.$cookie.get('jwt'),
+        // 'project': that.projectName,
+        'msg': command,
+        // 'language': 0,
+        'type': 0
       }));
     }
   },
@@ -127,7 +128,7 @@ export default {
       //       that.term.prompt();
       //     } else {
       //       that.term.write('\r\n');
-            that.terminalFlow(that.command, that);
+            // that.terminalFlow(that.command, that);
       //       that.command = '';
       //     }
       //     return;
@@ -155,8 +156,8 @@ export default {
     })
 
     this.term.on('paste', function(data, ev) {
-      that.command += data
-      that.term.write(data)
+      // that.command += data
+      that.terminalSend(data)
     })
     // this.term.on('data', function(str) {
     //   if (!that.ws) {

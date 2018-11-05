@@ -35,9 +35,9 @@ export default {
   },
   methods: {
     initWebSocket: function () {
-      this.ws = new WebSocket('ws://' + window.location.hostname + '/api/ws/dir');
+      // this.ws = new WebSocket('ws://' + window.location.hostname + '/api/ws/dir');
       let that = this;
-      // this.ws = new WebSocket('ws://' + 'go-online.heartublade.com' + '/api/ws/dir');
+      this.ws = new WebSocket('ws://' + 'go-online.heartublade.com' + '/api/ws/dir');
       this.ws.onopen = function (evt) {
         console.log(that.ws);
         that.ws.send(JSON.stringify({
@@ -89,7 +89,7 @@ export default {
           switchTo: null,
           children: Response.data.children
         };
-        if(!tree.children) {
+        if (!tree.children) {
           tree.children = [];
         }
         tree.children.forEach(child => {
