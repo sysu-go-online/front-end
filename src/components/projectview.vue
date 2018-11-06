@@ -6,6 +6,8 @@
 
 <script>
 import Tree from './Tree/tree.vue';
+import eventBus from '../util/eventBus.js';
+
 export default {
   data () {
     return {
@@ -32,12 +34,13 @@ export default {
     this.projectName = this.$route.params.projectname;
     this.getTree();
     this.initWebSocket();
+    // eventBus.$on('changeTabName', this.checkToRenameCurrent);
   },
   methods: {
     initWebSocket: function () {
-      // this.ws = new WebSocket('ws://' + window.location.hostname + '/api/ws/dir');
+      this.ws = new WebSocket('ws://' + window.location.hostname + '/api/ws/dir');
       let that = this;
-      this.ws = new WebSocket('ws://' + 'go-online.heartublade.com' + '/api/ws/dir');
+      // this.ws = new WebSocket('ws://' + 'go-online.heartublade.com' + '/api/ws/dir');
       this.ws.onopen = function (evt) {
         console.log(that.ws);
         that.ws.send(JSON.stringify({
@@ -49,25 +52,35 @@ export default {
         // console.log(evt);
         let data = JSON.parse(evt.data);
         // 若为有效信息
-        if (data.ok) {
+        if (data.ok && JSON.stringify(that.treeData) !== '{}') {
+          console.log(that.treeData);
+          console.log('WS update');
+          var changedFile = that.$utilHelper.getNode(that.treeData, that.projectName + '/' + data.path).node;
           // TO-IMPROVE: 直接拉整颗树，暴力更新
-          that.getTree(this);
+          // that.getTree();
           // let path = data.path;
-          // if (data.type === -1) { // 文件被创建成功
+          if (data.type === -1) { // 文件被创建成功
+            if (!changedFile) {
+              // that.getTree();
+              // 需要文件类型-dir/file,默认file
+              eventBus.$emit('createNodeLocal', data.path);
+            }
+          } else if (data.type === 0) { // 文件被创建
 
-          // } else if (data.type === 0) { // 文件被创建
+          } else if (data.type === 1) { // 文件被删除
+            if (changedFile) {
+              // that.getTree();
+            }
+          } else if (data.type === 2) { // 文件被修改
+            // 保存/重命名
+            // that.getTree();
+          } else if (data.type === 3) { // 文件从此处被移动走
+            // that.getTree();
+          } else if (data.type === 4) { // 文件被移动到此处
+            // that.getTree();
+          } else { // 5:未定义行为
 
-          // } else if (data.type === 1) { // 文件被删除
-
-          // } else if (data.type === 2) { // 文件被修改
-
-          // } else if (data.type === 3) { // 文件从此处被移动走
-
-          // } else if (data.type === 4) { // 文件被移动到此处
-
-          // } else { // 5:未定义行为
-
-          // }
+          }
         }
       };
     },
@@ -80,6 +93,7 @@ export default {
           name: Response.data.name,
           type: Response.data.type,
           root: Response.data.root,
+          path: Response.data.name, // 用作唯一ID
           // name: this.projectName,
           // type: 'dir',
           // root: true,
@@ -92,13 +106,24 @@ export default {
         if (!tree.children) {
           tree.children = [];
         }
-        tree.children.forEach(child => {
-          child.id = this.$utilHelper.generateUUID();
-        });
+        // 给所有文件填充path（ID）
+        this.getChildrenPath(tree.children, tree.path);
+        // tree.children.forEach(child => {
+
+        //   // child.id = this.$utilHelper.generateUUID();
+        // });
         this.$utilHelper.formatChildren(tree);
         this.$utilHelper.treeSort(tree);
         this.treeData = tree;
       });
+    },
+    getChildrenPath: function (children, prePath) {
+      for (var i = 0, len = children.length; i < len; i++) {
+        children[i].path = prePath + '/' + children[i].name;
+        if (children[i].children) {
+          this.getChildrenPath(children[i].children, children[i].path);
+        }
+      }
     },
     SaveEdit: function (fileName, filePath, isSelectedNode, isDir) {
       var that = this;
@@ -118,6 +143,9 @@ export default {
     deleteNode: function (node) {
       this.$emit('deleteFile', node);
     },
+    renameNode: function (node, oldFilePath) {
+      this.$emit('renameFile', node, oldFilePath);
+    },
     // TODO:改逻辑
     // DelNode: function (filePath, isSelectedNode) {
     //   let that = this;
@@ -133,21 +161,22 @@ export default {
     //     this.$emit('openfile', this.currentFiledata);
     //   }
     // },
-    renameNode: function (node) {
-      // this.currentFiledata = node;
-      this.$emit('renameFile', node);
-    },
     OpenFile: function (file) {
       this.currentFiledata = file;
       this.currentFiledata['projectid'] = this.projectId;
       this.$emit('openfile', this.currentFiledata, this.projectName);
     }
+    // checkToRenameCurrent: function (need, data) {
+    //   if (need) {
+    //     this.currentFileData = data;
+    //   }
+    // }
   },
   watch: {
     value: {
       handler: function (val, oldval) {
         if (JSON.stringify(val) !== '{}') {
-          if (val.id !== this.currentFiledata.id) {
+          if (val.path !== this.currentFiledata.path) {
             // console.log("switchFromTop");
             this.currentFiledata = val;
             // TOFIX
