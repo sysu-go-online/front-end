@@ -38,11 +38,11 @@ export default {
   },
   methods: {
     initWebSocket: function () {
-      this.ws = new WebSocket('ws://' + window.location.hostname + '/api/ws/dir');
+      // this.ws = new WebSocket('ws://' + window.location.hostname + '/api/ws/dir');
       let that = this;
-      // this.ws = new WebSocket('ws://' + 'go-online.heartublade.com' + '/api/ws/dir');
+      this.ws = new WebSocket('ws://' + 'go-online.heartublade.com' + '/api/ws/dir');
       this.ws.onopen = function (evt) {
-        console.log(that.ws);
+        // console.log(that.ws);
         that.ws.send(JSON.stringify({
           'jwt': that.$cookie.get('jwt'),
           'project': that.projectName
@@ -53,23 +53,28 @@ export default {
         let data = JSON.parse(evt.data);
         // 若为有效信息
         if (data.ok && JSON.stringify(that.treeData) !== '{}') {
-          console.log(that.treeData);
-          console.log('WS update');
+          // console.log("current tree", that.treeData);
+          // console.log('WS update');
+          // console.log("changed path", data.path);
           var changedFile = that.$utilHelper.getNode(that.treeData, that.projectName + '/' + data.path).node;
+          // console.log("found at local", changedFile);
           // TO-IMPROVE: 直接拉整颗树，暴力更新
           // that.getTree();
           // let path = data.path;
-          if (data.type === -1) { // 文件被创建成功
+          // console.log('status', data.type);
+          if (data.type === -1) { // 文件夹监听成功
+      
+          } else if (data.type === 0) { // 文件被创建
             if (!changedFile) {
               // that.getTree();
               // 需要文件类型-dir/file,默认file
+              // console.log("create local");
               eventBus.$emit('createNodeLocal', data.path);
             }
-          } else if (data.type === 0) { // 文件被创建
-
           } else if (data.type === 1) { // 文件被删除
             if (changedFile) {
-              // that.getTree();
+              // console.log("delete local");
+              eventBus.$emit('deleteNodeLocal', changedFile);
             }
           } else if (data.type === 2) { // 文件被修改
             // 保存/重命名
@@ -88,7 +93,7 @@ export default {
       this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files', {
         headers: {'Authorization': this.$cookie.get('jwt')}
       }).then(Response => {
-        console.log(Response);
+        // console.log(Response);
         var tree = {
           name: Response.data.name,
           type: Response.data.type,
