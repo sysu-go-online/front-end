@@ -82,7 +82,7 @@ export default {
   created: function () {
     eventBus.$on('closeTab', this.closeFile);
     eventBus.$on('changeTabName', this.checkToRename);
-    eventBud.$on('callSaveFromMenu', this.Save(this.currentFilePath));
+    eventBus.$on('callSaveFromMenu', this.Save(this.currentFilePath));
   },
   methods: {
     updateFunc (newCode, evt) {
