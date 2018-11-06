@@ -63,6 +63,9 @@ export default {
   created: function () {
     this.projectName = this.$route.params.projectname;
     eventBus.$on('createNodeLocal', this.createNodeLocal);
+    eventBus.$on('deleteNodeLocal', this.deleteNodeLocal);
+    eventBus.$on('callNewFileFromMenu', this.addFile);
+    eventBus.$on('callNewFolderFromMenu', this.addFolder);
   },
   mounted: function () {
     window.addEventListener('scroll', this.updateMenuWidth, true);
@@ -83,7 +86,7 @@ export default {
       this.$utilHelper.getNode(this.tree, this.selNode.path).node.isSelected = false;
       // 将当前选中节点的isSelected属性变为true
       // 临时修复重命名时的BUG
-      if(this.$utilHelper.getNode(this.tree, node.path).node) {
+      if (this.$utilHelper.getNode(this.tree, node.path).node) {
         this.$utilHelper.getNode(this.tree, node.path).node.isSelected = true;
       }
       // 记录当前选中节点
@@ -353,6 +356,7 @@ export default {
       this.deleteNode(this.clickNode);
     },
     createNodeLocal: function (relativePath) {
+      // console.log("enter create");
       var completePath = this.projectName + '/' + relativePath;
       var part = completePath.split('/');
       var fileName = part.pop();
@@ -367,6 +371,28 @@ export default {
         editable: false
       };
       children.push(newNode);
+      this.$utilHelper.childrenSort(children);
+      this.$emit('input', this.tree);
+    },
+    deleteNodeLocal: function (node) {
+      // console.log("enter delete");
+      // var completePath = this.projectName + '/' + relativePath;
+      // let node = this.$utilHelper.getNode(this.tree, completePath).node;
+      var children = this.$utilHelper.getNode(this.tree, node.path).parentNode.children;
+      for (var i = 0, len = children.length; i < len; i++) {
+        if (children[i].path === node.path) {
+          children.splice(i, 1);
+          break;
+        }
+      }
+      // console.log("after tree", this.tree);
+      if (this.selNode && this.selNode.path === node.path) {
+        this.selNode = null;
+      }
+      this.$emit('deleteNode', node);
+      // v-model双向绑定，更新父组件数据
+      this.tree.switchTo = null;
+      this.$emit('input', this.tree);
     }
   },
   watch: {
