@@ -6,20 +6,20 @@
       1. 改成多标签
       2. 识别脏状态
       3. 文件缩略图-->
-      <span v-if="this.currentFileID != ''">
-        <span v-for="fileid in this.fileIDs" :key=fileid :class="['tab', {active: files[fileid].isSelected}]" @click="switchFile(fileid)">
-          <span class="file-name">{{ files[fileid].name }}</span>
+      <span v-if="this.currentFilePath != ''">
+        <span v-for="filePath in this.filePaths" :key=filePath :class="['tab', {active: files[filePath].isSelected}]" @click="switchFile(filePath)">
+          <span class="file-name">{{ files[filePath].name }}</span>
           <!-- TODO:
           1. 同名时显示路径
           2. 显示脏状态-->
           <span class="span_icon">
-            <svg class="icon icon-search-close" @click.stop="checkDirtyThenClose(fileid)"><use xlink:href="#icon-search-close"></use></svg>
+            <svg class="icon icon-search-close" @click.stop="checkDirtyThenClose(filePath)"><use xlink:href="#icon-search-close"></use></svg>
           </span>
         </span>
       </span>
       <span id="save"><input type="button" value="保存" id="save-button" @click="Save"></span>
     </div>
-    <div id="edit-area" @keyup.ctrl.83.stop="Save(currentFileID)" @keydown.ctrl.83.prevent>
+    <div id="edit-area" @keyup.ctrl.83.stop="Save(currentFilePath)" @keydown.ctrl.83.prevent>
       <!-- 编辑区 -->
       <!-- TODO: 本地缓存 -->
       <MonacoEditor
@@ -35,6 +35,7 @@
 
 <script>
 import MonacoEditor from 'vue-monaco';
+import eventBus from '../util/eventBus.js';
 
 export default {
   name: 'Editor',
@@ -44,7 +45,7 @@ export default {
       // id作为key
       openedCodes: new Map(),
       // 同fileID，用来存储打开代码的顺序
-      fileIDs: [],
+      filePaths: [],
       cmOptions: {
         // codemirror options
         indentUnit: 2,
@@ -59,7 +60,7 @@ export default {
       },
       // 已打开文件的信息
       files: {},
-      currentFileID: ''
+      currentFilePath: ''
     };
   },
   props: {
@@ -68,12 +69,7 @@ export default {
         return {};
       }
     },
-    toDeleteFileId: {
-      default: function () {
-        return {};
-      }
-    },
-    toRenameFile: {
+    fileToRename: {
       default: function () {
         return {};
       }
@@ -82,6 +78,10 @@ export default {
   },
   components: {
     MonacoEditor
+  },
+  created: function () {
+    eventBus.$on('closeTab', this.closeFile);
+    eventBus.$on('changeTabName', this.checkToRename);
   },
   methods: {
     updateFunc (newCode, evt) {
@@ -97,22 +97,23 @@ export default {
       this.currentCode = newCode;
     },
     // OK:
-    Save (fileid) {
-      let file = this.files[fileid];
+    Save (filePath) {
+      let file = this.files[filePath];
       if (file.isSelected) {
-        this.openedCodes.set(fileid, this.currentCode);
+        this.openedCodes.set(filePath, this.currentCode);
       }
       // console.log("current code ", this.currentCode);
-      // console.log("save code", this.openedCodes.get(fileid));
-      this.$http.patch('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + file.path, {
+      // console.log("save code", this.openedCodes.get(filePath));
+      let relativePath = file.path.slice(this.projectName.length + 1);
+      this.$http.patch('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
         'operation': 'update',
-        'content': this.openedCodes.get(fileid)
+        'content': this.openedCodes.get(filePath)
       }, {
         headers: {'Authorization': this.$cookie.get('jwt')}
       }).then(Response => {
         // TODO：修改为气泡提示格式
-        if (this.files[fileid]) {
-          this.files[fileid].isDirty = false;
+        if (this.files[filePath]) {
+          this.files[filePath].isDirty = false;
         }
         this.$dialog.alert('保存成功', {backdropClose: true});
       }).catch(() => {
@@ -124,79 +125,91 @@ export default {
       if (file.name === '') {
         // 貌似不可能存在？
         this.currentCode = '';
-        // console.log('invalid name');
         return;
-      } else if (this.openedCodes.has(file.id)) {
-        this.currentCode = this.openedCodes.get(file.id);
-        // console.log('got from log ', this.currentCode);
+      } else if (this.openedCodes.has(file.path)) {
+        this.currentCode = this.openedCodes.get(file.path);
         return;
       }
-      this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + file.path, {
+      let relativePath = file.path.slice(this.projectName.length + 1);
+      this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
         headers: {'Authorization': this.$cookie.get('jwt')}
       }).then(Response => {
         // console.log(Response);
         this.currentCode = Response.data.toString();
-        this.openedCodes.set(file.id, this.currentCode);
-        this.fileIDs.push(file.id);
+        this.openedCodes.set(file.path, this.currentCode);
+        this.filePaths.push(file.path);
       });
     },
-    switchFile: function (fileid) {
-      if (fileid === this.currentFileID) return;
+    switchFile: function (filePath) {
+      if (filePath === this.currentFilePath) return;
       // 本地保存当前代码
       // TODO-BUG: 输入完代码后立即单击切换文件，有时会无法保存当前文件代码
-      if (this.currentFileID) {
-        this.openedCodes.set(this.currentFileID, this.currentCode);
+      if (this.currentFilePath) {
+        this.openedCodes.set(this.currentFilePath, this.currentCode);
       }
       // 切换当前文件
-      this.files[fileid].isSelected = true;
-      this.$emit('openfile', this.files[fileid], this.projectName);
+      this.files[filePath].isSelected = true;
+      this.$emit('openfile', this.files[filePath], this.projectName);
       // console.log("changed");
     },
-    checkDirtyThenClose: function (fileid) {
-      let file = this.files[fileid];
+    checkDirtyThenClose: function (filePath) {
+      let file = this.files[filePath];
       // console.log(file);
       if (file.isDirty) {
         // 提示是否保存
-        this.$dialog.confirm('是否要保存对 ' + this.files[fileid].name + ' 的更改？', {
+        this.$dialog.confirm('是否要保存对 ' + file.name + ' 的更改？', {
           okText: '是',
           cancelText: '否',
           backdropClose: true
         }).then(() => {
         // 是
-          this.Save(fileid);
-          this.closeFile(fileid);
+          this.Save(filePath);
+          this.closeFile(filePath);
         }).catch(() => {
-          this.closeFile(fileid);
+          this.closeFile(filePath);
         });
       } else {
-        this.closeFile(fileid);
+        this.closeFile(filePath);
       }
     },
-    closeFile: function (fileid) {
-      let file = this.files[fileid];
-      let indexOfID = this.fileIDs.indexOf(fileid);
-      this.fileIDs.splice(indexOfID, 1);
-      // console.log(file);
-      if (file.isSelected) {
-        // 顺延打开下一文件
-        if (this.fileIDs[indexOfID]) {
-          this.switchFile(this.fileIDs[indexOfID]);
-        } else if (this.fileIDs[--indexOfID]) { // 若不存在，则顺延打开上一文件
-          this.switchFile(this.fileIDs[indexOfID]);
-        } else { // 若不存在，则文件队列为空，清楚当前文件信息
-          this.currentCode = '';
-          this.currentFileID = '';
-          this.$emit('nofileopen');
+    closeFile: function (filePath) {
+      let file = this.files[filePath];
+      if (file) {
+        let indexOfPath = this.filePaths.indexOf(filePath);
+        this.filePaths.splice(indexOfPath, 1);
+        // console.log(file);
+        if (file.isSelected) {
+          // 顺延打开下一文件
+          if (this.filePaths[indexOfPath]) {
+            this.switchFile(this.filePaths[indexOfPath]);
+          } else if (this.filePaths[--indexOfPath]) { // 若不存在，则顺延打开上一文件
+            this.switchFile(this.filePaths[indexOfPath]);
+          } else { // 若不存在，则文件队列为空，清楚当前文件信息
+            this.currentCode = '';
+            this.currentFilePath = '';
+            this.$emit('nofileopen');
+          }
         }
+        // 删除文件记录及代码记录
+        // FIXED-BUG:已删除，但不更新页面
+        delete this.files[filePath];
+        // console.log("deleted");
+        this.openedCodes.delete(filePath);
+        // TODO: 待改良
+        this.$emit('closeFile', filePath);
+        this.$forceUpdate();
       }
-      // 删除文件记录及代码记录
-      // FIXED-BUG:已删除，但不更新页面
-      delete this.files[fileid];
-      // console.log("deleted");
-      this.openedCodes.delete(fileid);
-      // TODO: 待改良
-      this.$emit('closeFile', fileid);
-      this.$forceUpdate();
+    },
+    closeTab: function (path) {
+      this.closeFile(path);
+    },
+    checkToRename: function (isCurrent, data, oldPath) {
+      var index = this.filePaths.indexOf(oldPath);
+      if (index !== -1) {
+        this.filePaths[index] = data.path;
+        delete this.files[oldPath];
+        this.files[data.path] = data;
+      }
     }
   },
   watch: {
@@ -205,29 +218,29 @@ export default {
         if (file === undefined) return;
         // 失活上一标签
         if (JSON.stringify(oldFile) !== '{}' && oldFile !== undefined) {
-          if (oldFile.id === file.id) {
-            // 待测试：同步重命名
-            if (oldFile.name !== file.name) {
-              this.files[file.id].name = file.name;
-            }
-            return;
-          }
+          // if (oldFile.path === file.path) {
+          //   if (oldFile.name !== file.name) {
+          //     this.files[file.path].name = file.name;
+          //   }
+          //   return;
+          // }
           // 切换文件，更新上一文件代码缓存
-          if (this.files[oldFile.id]) {
-            this.files[oldFile.id].isSelected = false;
-            this.openedCodes.set(oldFile.id, this.currentCode);
+          if (this.files[oldFile.path]) {
+            this.files[oldFile.path].isSelected = false;
+            this.openedCodes.set(oldFile.path, this.currentCode);
           }
         }
-        this.currentFileID = file.id;
-        this.files[this.currentFileID] = file;
+        this.currentFilePath = file.path;
+        this.files[this.currentFilePath] = file;
         this.getFile(file);
       },
       deep: true
     },
     currentCode: function (cCode) {
-      var file = this.files[this.currentFileID];
+      var file = this.files[this.currentFilePath];
       if (!file.isDirty) {
-        this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + file.path, {
+        let relativePath = file.path.slice(this.projectName.length + 1);
+        this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
           headers: {'Authorization': this.$cookie.get('jwt')}
         }).then(Response => {
           // console.log(Response);
@@ -235,14 +248,28 @@ export default {
         });
       }
     },
-    toDeleteFileId: function (id, oldId) {
-      // this.currentFileID = null;
-      this.closeFile(id);
-    },
-    toRenameFile: {
-      handler: function (file, oldFile) {
-        this.files[file.id].name = file.name;
-        this.files[file.id].path = file.path;
+    // toDeleteFilePath: function (path, oldPath) {
+    //   // this.currentFilePath = null;
+    //   console.log('sync');
+    //   this.closeFile(path);
+    // },
+    fileToRename: {
+      handler: function (newData, oldData) {
+        if (this.currentFilePath === newData.oldPath) {
+          this.currentFilePath = newData.path;
+        }
+        var index = this.filePaths.indexOf(newData.oldPath);
+        if (index !== -1) {
+          this.filePaths[index] = newData.path;
+        }
+        var code = this.openedCodes.get(newData.oldPath);
+        this.openedCodes.set(newData.path, code);
+        this.openedCodes.delete(newData.oldPath);
+        var oldFile = this.files[newData.oldPath];
+        oldFile.name = newData.name;
+        oldFile.path = newData.path;
+        this.files[newData.path] = oldFile;
+        delete this.files[newData.oldPath];
       },
       deep: true
     }
