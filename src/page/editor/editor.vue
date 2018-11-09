@@ -1,6 +1,11 @@
 <template>
   <div id="home">
-    <heads></heads>
+    <div id="header">
+      <heads></heads>
+    </div> 
+    <div id="bar">
+      <Menu></Menu>
+    </div>
     <div id="main">
       <div id="menu">
         <div class="menu-icon"><svg class="icon icon-file" @click="showProjectView"><use xlink:href="#icon-file"></use></svg></div>
@@ -30,6 +35,7 @@ import Shell from '../../components/shell';
 import Hint from '../../components/hint';
 import Projectview from '../../components/projectview';
 import eventBus from '../../util/eventBus.js';
+import Menu from '../../components/menu';
 
 export default {
   name: 'Editor',
@@ -38,6 +44,7 @@ export default {
     heads: Header,
     shell: Shell,
     hint: Hint,
+    Menu,
     'project-view': Projectview
   },
   data () {
@@ -128,6 +135,15 @@ export default {
 </script>
 
 <style lang="scss">
+#header{
+  height: 35px;
+}
+/*-------------导航菜单样式---------------- */
+#bar{
+  height: 35px;
+  width: 100%;
+  background: #292929;
+}
 #menu {
     position: absolute;
     left: 0;
@@ -240,4 +256,5 @@ export default {
 a {
   color: #333;
 }
+
 </style>
