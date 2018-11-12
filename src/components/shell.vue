@@ -20,9 +20,9 @@ export default {
       ws: null,
       command: '',// 用户输入内容
       key: null, // 获取换行字符对应的字符串; 验证，xterm.js先触发'key'事件，再触发'data'事件
-      projectName: '',
-      cols: this.term.cols,
-      row: this.term.rows
+      projectName: ''
+      // cols: this.term.cols,
+      // row: this.term.rows
     }
   },
   methods: {
@@ -55,7 +55,7 @@ export default {
       return term
     },
     terminalFlow: function(that) {
-      //let hostname = window.location.hostname;
+      // let hostname = window.location.hostname;
       let hostname = "go-online.heartublade.com"
       that.ws = new WebSocket('ws://' + hostname + '/api/ws/tty');
       that.ws.onopen = function(evt) {
@@ -69,8 +69,9 @@ export default {
           'length': that.term.cols,
           'width': that.term.rows
         }));
+        console.log(that.term.cols);
+        console.log(that.term.rows);
         // that.term.writeln('链接建立成功');
-        // console.log(that.term.cols);
       }
       that.ws.onmessage = function (evt) {
         console.log(evt.data);
@@ -119,7 +120,7 @@ export default {
       }));
       // console.log(this.term.cols);
     },
-    //发送终端宽高
+    // 发送终端宽高
     terminalSizeSend: function(cols, rows){
       this.ws.send(JSON.stringify({
         'length': rows,
@@ -178,8 +179,8 @@ export default {
       //   }
       // }
     })
-    console.log(this.term.cols);
-    console.log(this.term.rows);
+    //console.log(this.term.cols);
+    //console.log(this.term.rows);
     this.term.on('paste', function(data, ev) {
       // that.command += data
       that.terminalSend(data)
