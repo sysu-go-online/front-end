@@ -26,7 +26,7 @@ export default {
     ...mapActions(['setProjectName', 'setTree']),
     initWebSocket: function () {
       var hostname = window.location.hostname;
-      hostname = 'go-online.heartublade.com';
+      // hostname = 'go-online.heartublade.com';
       this.ws = new WebSocket('ws://' + hostname + '/api/ws/dir');
       let that = this;
       this.ws.onopen = function (evt) {
