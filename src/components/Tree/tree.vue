@@ -1,7 +1,7 @@
 <template>
   <div id="tree">
     <div id="function_icon" class="hover-pointer">
-      <svg class="icon icon-file-add" @click="addFlie"><use xlink:href="#icon-file-add"></use></svg>
+      <svg class="icon icon-file-add" @click="addFile"><use xlink:href="#icon-file-add"></use></svg>
       <svg class="icon icon-folder-add" style="margin-left:5px" @click="addFolder"><use xlink:href="#icon-folder-add"></use></svg>
     </div>
     <div id="file_data">
@@ -21,7 +21,7 @@
     </div>
     <vue-context ref="menu">
       <ul>
-        <li @click="addFlie" v-show="!this.isClickFile">创建文件</li>
+        <li @click="addFile" v-show="!this.isClickFile">创建文件</li>
         <li @click="addFolder" v-show="!this.isClickFile">创建文件夹</li>
         <li @click="changeEditable">重命名</li>
         <li @click="deleteNodeFunc">删除</li>
@@ -231,7 +231,8 @@ export default {
       });
     },
     // 增加文件
-    addFlie: function () {
+    addFile: function () {
+      console.log('call');
       var parent = null;
       // 未选定任何节点，默认选择根节点
       if (!this.currentFile) {
