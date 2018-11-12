@@ -19,9 +19,11 @@
           <editor v-if="openEditor" @nofileopen="closeEditor" ref='editor'></editor>
           <div class="shell-section" v-bind:class="{'shell-hide': hideShell}">
             <shell class="shell-section-shell" @dbname="resolveDbname"></shell>
+            <!--
             <div class="shell-section-info">
               <div>二级域名：<a target="_blank" :href="subdomain">{{this.subdomain}}</a></div>
             </div>
+            -->
           </div>
         </div>
       </div>
@@ -160,10 +162,11 @@ export default {
   cursor: row-resize;
 }
 .shell-section {
-  width: 900px;
+  width: 100%;
   position: absolute;
   bottom: 0;
   height: 200px;
+  /*
   .shell-section-info {
     width: 195px;
     display: inline-block;
@@ -172,15 +175,18 @@ export default {
     vertical-align: top;
     color: white;
   }
+  */
   .shell-section-shell {
-    width: calc(100% - 200px) !important;
+    width: 100% !important;
+    height: 100%;
     display: inline-block;
   }
 }
+/*
 .shell-section-shell {
   width: calc(100% - 200px) !important;
   display: inline-block;
-}
+}*/
 #file_tree.project-view-hide {
   transform: translate(-200px,0px);
 }
