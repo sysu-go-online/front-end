@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import evenBus from '../util/eventBus.js';
+import evenBus from '../util/eventBus';
 
 
 export default {
