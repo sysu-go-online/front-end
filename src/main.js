@@ -5,7 +5,9 @@ import App from './App';
 import VueCookie from 'vue-cookie';
 
 import router from './router';
-// import store from './store'
+// import Vuex from 'vuex';
+import store from './store/index';
+
 import MuseUI from 'muse-ui';
 import 'muse-ui/dist/muse-ui.css';
 
@@ -32,6 +34,8 @@ import 'vuejs-dialog/dist/vuejs-dialog.min.css';
 
 import config from './util/config';
 Vue.use(VueCookie);
+
+// Vue.use(Vuex);
 
 Vue.use(VueJWT, {
   signKey: 'go-online',
@@ -72,7 +76,7 @@ Vue.config.productionTip = false;
 new Vue({
   el: '#app',
   router,
-  // store,
+  store,
   components: { App },
   template: '<App/>'
 });
