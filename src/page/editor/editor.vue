@@ -87,10 +87,10 @@ export default {
   height: 35px;
 }
 /*-------------导航菜单样式---------------- */
-#bar{
+#bar {
   height: 35px;
   width: 100%;
-  background: #292929;
+  background: black;
 }
 #menu {
     position: absolute;
