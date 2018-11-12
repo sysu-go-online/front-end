@@ -1,15 +1,15 @@
 <template>
-    <div id = "menu">
+    <div id = "menu-bar">
         <mu-menu placement="bottom-start" >
           <mu-button color="black">文件</mu-button>
           <mu-list slot="content">
             <mu-list-item button @click="addFile">
               <mu-list-item-title>新建文件</mu-list-item-title>
             </mu-list-item>
-            <mu-list-item button @click='addFolder'>
+            <mu-list-item button @click="addFolder">
               <mu-list-item-title>新建文件夹</mu-list-item-title>
             </mu-list-item>
-            <mu-list-item button @click='Save'>
+            <mu-list-item button @click="Save">
               <mu-list-item-title>保存</mu-list-item-title>
             </mu-list-item>
             <mu-list-item button>
@@ -60,7 +60,7 @@
 import eventBus from '../util/eventBus.js';
 
 export default {
-  name: 'menu',
+  name: 'menu-bar',
   data () {
     return {
 
@@ -82,7 +82,7 @@ export default {
 };
 </script>
 <style>
-#menu{
+#menu-bar{
   height: 50px;
   width: 100%;
   box-sizing: border-box;
