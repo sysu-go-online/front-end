@@ -55,8 +55,8 @@ export default {
       return term
     },
     terminalFlow: function(that) {
-      // let hostname = window.location.hostname;
-      let hostname = "go-online.heartublade.com"
+      let hostname = window.location.hostname;
+      // let hostname = "go-online.heartublade.com"
       that.ws = new WebSocket('ws://' + hostname + '/api/ws/tty');
       that.ws.onopen = function(evt) {
         console.log(that.projectName);
