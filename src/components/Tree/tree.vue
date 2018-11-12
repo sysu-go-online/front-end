@@ -7,14 +7,13 @@
     <div id="file_data">
       <tree-menu
         @selectNode="selectNode"
-        :nodeData="tree"
+        :nodeData="localTree"
         :depth="0"
         :clickable="clickable"
         :menuWidth="menuWidth"
         @changeNode="changeNode"
         @deleteNode="deleteNode"
         @changeClickable="changeClickable"
-        @openFile="openFile"
         @contextmenu="Opencontextmenu"
         ref="topTree"
       >
@@ -34,63 +33,89 @@
 <script>
 import TreeMenu from './treeMenu.vue';
 import { VueContext } from 'vue-context';
+import {mapGetters, mapActions} from 'vuex';
 import eventBus from '../../util/eventBus.js';
 
 export default {
   name: 'directory-tree',
-  props: {
-    value: {
-      default: function () {
-        return {};
-      }
-    }
-  },
   data: function () {
     return {
-      tree: JSON.parse(JSON.stringify(this.value)),
-      selNode: null,
+      localTree: {},
+      localOpenFiles: {},
+      localOpenFileOrder: [],
       clickable: true,
       isClickFile: false,
       clickNode: null,
-      menuWidth: '100%',
-      projectName: 'undefined'
+      fileNum: 0,
+      folderNum: 0,
+      menuWidth: '100%'
     };
+  },
+  computed: {
+    ...mapGetters(['projectName', 'tree', 'currentFile', 'openFiles', 'openFileOrder'])
   },
   components: {
     TreeMenu,
     VueContext
   },
-  created: function () {
-    this.projectName = this.$route.params.projectname;
-    eventBus.$on('createNodeLocal', this.createNodeLocal);
-    eventBus.$on('deleteNodeLocal', this.deleteNodeLocal);
-    eventBus.$on('callNewFileFromMenu', this.addFile);
-    eventBus.$on('callNewFolderFromMenu', this.addFolder);
-  },
-  mounted: function () {
-    window.addEventListener('scroll', this.updateMenuWidth, true);
-    this.$refs.topTree.showChildren = true;
-    this.$refs.topTree.arrow_rotate = { transform: `rotate(90deg)` };
-  },
   methods: {
+    ...mapActions(['setProjectName', 'setTree', 'setCurrentFile', 'setOpenFiles', 'setOpenFileOrder']),
     // 选中某个文件、文件夹或取消选中
     selectNode: function (node) {
-      if (!this.selNode) {
-        // 将当前选中节点的isSelected属性变为true
-        this.$utilHelper.getNode(this.tree, node.path).node.isSelected = true;
-        this.selNode = node;
+      // 切换为空节点时
+      if (!node) {
+        // console.log(this.currentFile.path);
+        if (this.$utilHelper.getNode(this.localTree, this.currentFile.path).node) {
+          this.$utilHelper.getNode(this.localTree, this.currentFile.path).node.isSelected = false;
+        }
+        this.setCurrentFile({'currentFile': null});
+        this.setOpenFiles({'openFiles': this.localOpenFiles});
+        this.setOpenFileOrder({'openFileOrder': this.localOpenFileOrder});
+        this.setTree({'tree': this.localTree});
         return;
       }
-      if (node.path === this.selNode.path) return;
-      // 将前一个选中节点的isSelected属性变为false
-      this.$utilHelper.getNode(this.tree, this.selNode.path).node.isSelected = false;
-      // 将当前选中节点的isSelected属性变为true
-      // 临时修复重命名时的BUG
-      if (this.$utilHelper.getNode(this.tree, node.path).node) {
-        this.$utilHelper.getNode(this.tree, node.path).node.isSelected = true;
+      node.isSelected = true;
+      // 若当前无已打开的文件
+      if (node.isPicture) {
+        eventBus.$emit('showPicture', true);
+      } else {
+        eventBus.$emit('showPicture', false);
+      }
+      if (!this.currentFile) {
+        // 将当前选中节点的isSelected属性变为true
+        var file = this.$utilHelper.getNode(this.localTree, node.path).node;
+        file.isSelected = true;
+        // this.$utilHelper.getNode(this.localTree, node.path).node.isSelected = true;
+        this.localOpenFiles[file.path] = file;
+        this.$emit('openEditor');
+      } else if (node.path === this.currentFile.path) {
+        return;
+      } else {
+        // 若已打开文件，则调整打开顺序
+        if (this.localOpenFiles[node.path]) {
+          this.localOpenFileOrder.splice(this.localOpenFileOrder.indexOf(node.path), 1);
+        }
+        // console.log(this.localTree);
+        // 更新数据
+        var lastNode = this.$utilHelper.getNode(this.localTree, this.currentFile.path).node;
+        var currentNode = this.$utilHelper.getNode(this.localTree, node.path).node;
+        // TOFIX-从目录删除文件时，this.localTree不同步
+        if (lastNode) {
+          lastNode.isSelected = false;
+          this.localOpenFiles[lastNode.path] = lastNode;
+        }
+        if (currentNode) {
+          currentNode.isSelected = true;
+          this.localOpenFiles[currentNode.path] = currentNode;
+        }
       }
       // 记录当前选中节点
-      this.selNode = node;
+      this.setOpenFiles({'openFiles': this.localOpenFiles});
+      // 更新打开文件的顺序，用于回溯
+      this.localOpenFileOrder.push(node.path);
+      this.setOpenFileOrder({'openFileOrder': this.localOpenFileOrder});
+      this.setCurrentFile({'currentFile': node});
+      this.setTree({'tree': this.localTree});
     },
     // 修改节点的可点击性
     changeClickable: function () {
@@ -109,72 +134,47 @@ export default {
       this.clickNode = node;
       this.$refs.menu.open(evt);
     },
-    // 打开文件
-    openFile: function (node) {
-      // 有项目名test/tt.txt
-      var filepath = node.path;
-      // if(!node.path) {
-      //   filepath = this.getFilePath(node, this);
-      // }
-      // 无项目名tt.txt
-      // let newFilepath = filepath.substr(this.projectName.length + 1, filepath.length);
-      var file = {
-        name: node.name,
-        // 待删除
-        // id: node.id,
-        // 用作唯一ID
-        path: filepath,
-        isSelected: true,
-        isDirty: false
-      };
-      this.$emit('OpenFile', file);
-    },
-    // TODO-测试同步
+    // TOFIX-重命名文件夹时，修改子文件路径
     // 修改节点名称
     changeNode: function (node, name) {
-      // var oldfilePath = this.getFilePath(node, this);
-      // var relativePath = oldfilePath.substr(this.projectName.length + 1, oldfilePath.length);
-      // var newfilePath = relativePath.slice(0, -node.name.length) + name;
+      // console.log('changeing "' + node.name + '" name');
+      // console.log(this.localTree);
       var oldFilePath = node.path;
-      var needToSyncCurrent = oldFilePath === this.selNode.path;
-      // 选择从服务器拉取的文件时
-      // if(oldFilePath === undefined) {
-      //   oldFilePath = this.getFilePath(newNode, this, parent)
-      // }
       var relativeOldPath = oldFilePath.slice(this.projectName.length + 1);
       var newFilePath = oldFilePath.slice(0, -node.name.length) + name;
       var relativeNewPath = newFilePath.slice(this.projectName.length + 1);
-      // console.log(relativeOldPath);
-      // console.log(relativeNewPath);
       this.$http.patch('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativeOldPath, {
         'operation': 'rename',
         'content': relativeNewPath
       }, {
         headers: {'Authorization': this.$cookie.get('jwt')}
       }).then(Response => {
-        this.$utilHelper.getNode(this.tree, node.path).node.name = name;
-        this.$utilHelper.getNode(this.tree, node.path).node.path = newFilePath;
-        node.name = name;
-        node.path = newFilePath;
-        this.$utilHelper.childrenSort(this.$utilHelper.getNode(this.tree, newFilePath).parentNode.children);
+        // console.log(this.localTree);
+        var file = this.$utilHelper.getNode(this.localTree, oldFilePath).node;
+        file.name = name;
+        file.path = newFilePath;
+        // console.log(this.$utilHelper.getNode(this.localTree, newFilePath).node);
+        this.$utilHelper.childrenSort(this.$utilHelper.getNode(this.localTree, newFilePath).parentNode.children);
         this.clickable = !this.clickable;
-        // v-model双向绑定，更新父组件数据
-        this.$emit('input', this.tree);
-        // 获取filepath, 触发父组件数据更新
-        // node.path = this.getFilePath(node, this).substr(this.projectName.length + 1, oldfilePath.length);
-        this.$utilHelper.getNode(this.tree, newFilePath).node.editable = false;
-        if (needToSyncCurrent) {
-          this.selNode.name = name;
-          this.selNode.path = newFilePath;
+        file.editable = false;
+        // 同步store数据
+        if (this.localOpenFileOrder.indexOf(oldFilePath) !== -1) {
+          console.log('is open file');
+          delete this.localOpenFiles[oldFilePath];
+          this.localOpenFiles[newFilePath] = JSON.parse(JSON.stringify(file));
+          this.localOpenFileOrder[this.localOpenFileOrder.indexOf(oldFilePath)] = newFilePath;
+          eventBus.$emit('renameTab', file, oldFilePath);
+          if (oldFilePath === this.currentFile.path) {
+            this.setCurrentFile({'currentFile': JSON.parse(JSON.stringify(file))});
+          }
+          this.setOpenFiles({'openFiles': this.localOpenFiles});
+          this.setOpenFileOrder({'openFileOrder': this.localOpenFileOrder});
         }
-        this.$emit('rename', node, oldFilePath);
-        this.$emit('rename', node);
-        // eventBus.$emit('changeTabName', needToSyncCurrent, node, oldFilePath);
+        this.setTree({'tree': this.localTree});
         this.$dialog.alert('重命名成功');
       }).catch(() => {
-        console.log('faild');
         this.clickable = !this.clickable;
-        this.$utilHelper.getNode(this.tree, node.path).node.editable = false;
+        this.$utilHelper.getNode(this.localTree, node.path).node.editable = false;
         this.$dialog.alert('重命名失败');
       });
     },
@@ -185,67 +185,68 @@ export default {
         okText: '是',
         cancelText: '否'
       }).then(() => {
-        // var oldfilePath = this.getFilePath(node, this);
-        // var filePath = oldfilePath.substr(this.projectName.length + 1, oldfilePath.length);
         var filePath = node.path;
         var relativePath = filePath.slice(this.projectName.length + 1);
         this.$http.delete('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
           headers: {'Authorization': this.$cookie.get('jwt')}
         }).then(Response => {
-          var children = this.$utilHelper.getNode(this.tree, filePath).parentNode.children;
+          var children = this.$utilHelper.getNode(this.localTree, filePath).parentNode.children;
           for (var i = 0, len = children.length; i < len; i++) {
             if (children[i].path === filePath) {
+              // 如果是文件夹，则递归删除里面的子文件
+              // var subLen = children[i].children.length;
+              // if (subLen) {
+              //   for (var j = 0; j < subLen; j++) {
+              //     this.deleteNode(children[i].children[j]);
+              //   }
+              // }
               children.splice(i, 1);
               break;
             }
           }
-          if (this.selNode && this.selNode.path === filePath) {
-            this.selNode = null;
+          if (this.localOpenFileOrder.indexOf(filePath) !== -1) {
+            delete this.localOpenFiles[filePath];
+            this.localOpenFileOrder.splice(this.localOpenFileOrder.indexOf(filePath), 1);
+            eventBus.$emit('closeTab', filePath);
+            if (filePath === this.currentFile.path) {
+              var openNum = this.localOpenFileOrder.length;
+              if (openNum) {
+                console.log(this.localTree);
+                this.selectNode(this.localOpenFiles[this.localOpenFileOrder[openNum - 1]]);
+              } else {
+                this.selectNode(null);
+              }
+              this.$dialog.alert('删除成功', {backdropClose: true});
+              return;
+            }
+            this.setOpenFiles({'openFiles': this.localOpenFiles});
+            this.setOpenFileOrder({'openFileOrder': this.localOpenFileOrder});
           }
-          this.$emit('deleteNode', node);
-          // v-model双向绑定，更新父组件数据
-          this.tree.switchTo = null;
-          this.$emit('input', this.tree);
+          this.setTree({'tree': this.localTree});
           this.$dialog.alert('删除成功', {backdropClose: true});
         }).catch(() => {
           // TODO：补充说明原因
           this.$dialog.alert('删除失败', {backdropClose: true});
         });
       });
-      // if (this.selNode && this.selNode.id === node.id) {
-      //   this.selNode = null;
-      // }
-      // var oldfilePath = this.getFilePath(node, this);
-      // console.log(oldfilePath);
-      // var filePath = oldfilePath.substr(this.projectName.length + 1, oldfilePath.length);
-      // var children = this.$utilHelper.getNode(this.tree, node.id).parentNode.children;
-      // children.forEach((v, i) => {
-      //   if (v.id === node.id) {
-      //     children.splice(i, 1);
-      //   }
-      // });
-      // 删除节点，触发父节点更新
-      // var isSelected = (this.selNode && this.selNode.id === node.id);
-      // this.$emit('DelNode', filePath, isSelected);
     },
-    // OK-待测试: 修改逻辑，与服务端通信确认后才成功创建
     // 增加文件
     addFlie: function () {
       var parent = null;
       // 未选定任何节点，默认选择根节点
-      if (!this.selNode) {
-        parent = this.tree;
-      } else if (this.selNode.type !== 'dir') {
-        parent = this.$utilHelper.getNode(this.tree, this.selNode.path).parentNode;
+      if (!this.currentFile) {
+        parent = this.localTree;
+      } else if (this.currentFile.type !== 'dir') {
+        parent = this.$utilHelper.getNode(this.localTree, this.currentFile.path).parentNode;
       } else {
-        parent = this.$utilHelper.getNode(this.tree, this.selNode.path).node;
+        parent = this.$utilHelper.getNode(this.localTree, this.currentFile.path).node;
       }
       var children = parent.children;
 
       let that = this;
       // console.log(children);
       let newNode = {
-        name: 'newfile',
+        name: 'newfile_' + this.fileNum++,
         // id: this.$utilHelper.generateUUID(),
         type: 'file',
         isSelected: false,
@@ -254,7 +255,7 @@ export default {
       };
       let filepath = this.getFilePath(newNode, this, parent);
       // console.log(filepath);
-      let relativePath = filepath.substr(this.projectName.length + 1, filepath.length);
+      let relativePath = filepath.slice(this.projectName.length + 1);
       // console.log(newFilepath);
       this.$http.post('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
         'dir': false
@@ -269,32 +270,30 @@ export default {
         newNode.path = filepath;
         children.push(newNode);
         this.$utilHelper.childrenSort(children);
-        // v-model双向绑定，更新父组件数据
-        this.$emit('input', this.tree);
+        this.setTree({'tree': this.localTree});
       }).catch(() => {
         // TODO：说明具体原因？
         this.$dialog.alert('创建失败');
       });
     },
-    // TOFIX: 无法创建两个文件夹（文件名重复）
     // 增加文件夹
     addFolder: function () {
       var parent = null;
       // 未选定任何节点，默认选择根节点
-      if (!this.selNode) {
-        parent = this.tree;
-      } else if (this.selNode.type !== 'dir') {
-        parent = this.$utilHelper.getNode(this.tree, this.selNode.path).parentNode;
+      if (!this.currentFile) {
+        parent = this.localTree;
+      } else if (this.currentFile.type !== 'dir') {
+        parent = this.$utilHelper.getNode(this.localTree, this.currentFile.path).parentNode;
       } else {
-        parent = this.$utilHelper.getNode(this.tree, this.selNode.path).node;
+        parent = this.$utilHelper.getNode(this.localTree, this.currentFile.path).node;
       }
       var children = parent.children;
-      if (!children) {
-        children = [];
-      }
+      // if (!children) {
+      //   children = [];
+      // }
       let that = this;
       let newNode = {
-        name: 'newfolder',
+        name: 'newfolder_' + this.folderNum++,
         // id: this.$utilHelper.generateUUID(),
         type: 'dir',
         isSelected: false,
@@ -303,7 +302,7 @@ export default {
       };
       let filepath = this.getFilePath(newNode, this, parent);
       // console.log(filepath);
-      let relativePath = filepath.substr(this.projectName.length + 1, filepath.length);
+      let relativePath = filepath.slice(this.projectName.length + 1);
       // console.log(newFilepath);
       this.$http.post('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
         'dir': true
@@ -317,35 +316,19 @@ export default {
         children.push(newNode);
         this.$utilHelper.childrenSort(children);
         // v-model双向绑定，更新父组件数据
-        this.$emit('input', this.tree);
+        // this.$emit('input', this.tree);
+        this.setTree({'tree': this.localTree});
       }).catch(() => {
         this.$dialog.alert('创建失败');
-        // TODO: 不明操作？
-        // this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files', {
-        //   headers: {'Authorization': that.$cookie.get('jwt')}
-        // }).then(Response => {
-        //   var tree = {
-        //     name: Response.data.name,
-        //     id: Response.data.id,
-        //     type: Response.data.type,
-        //     root: Response.data.root,
-        //     isSelected: false,
-        //     editable: false,
-        //     children: Response.data.children
-        //   };
-        //   this.$utilHelper.formatChildren(tree);
-        //   this.$utilHelper.treeSort(tree);
-        //   this.tree = tree;
-        // });
       });
     },
     // 获取完整文件路径
-    getFilePath: function (node, that, parentNode = that.$utilHelper.getNode(that.tree, node.path).parentNode) {
+    getFilePath: function (node, that, parentNode = that.$utilHelper.getNode(that.localTree, node.path).parentNode) {
       var filePath = node.name;
       while (parentNode != null) {
         node = parentNode;
         filePath = parentNode.name + '/' + filePath;
-        parentNode = that.$utilHelper.getNode(that.tree, node.path).parentNode;
+        parentNode = that.$utilHelper.getNode(that.localTree, node.path).parentNode;
       }
       return filePath;
     },
@@ -355,30 +338,36 @@ export default {
     deleteNodeFunc: function () {
       this.deleteNode(this.clickNode);
     },
-    createNodeLocal: function (relativePath) {
+    createNodeLocal: function (relativePath, filetype) {
       // console.log("enter create");
       var completePath = this.projectName + '/' + relativePath;
       var part = completePath.split('/');
       var fileName = part.pop();
+      var suffix = fileName.split('.').pop();
+      var isPicture = false;
+      if (filetype === 'file') {
+        if (suffix === 'png' || suffix === 'jpg' || suffix === 'jpeg' || suffix === 'bmp' || suffix === 'gif') {
+          isPicture = true;
+        }
+      }
       var parentPath = part.join('/');
-      var children = this.$utilHelper.getNode(this.tree, parentPath).node.children;
+      var children = this.$utilHelper.getNode(this.localTree, parentPath).node.children;
       let newNode = {
         name: fileName,
         path: completePath,
-        type: 'file',
+        type: filetype,
         isSelected: false,
+        isPicture: isPicture,
         children: [],
         editable: false
       };
       children.push(newNode);
       this.$utilHelper.childrenSort(children);
-      this.$emit('input', this.tree);
+      // this.$emit('input', this.tree);
+      this.setTree({'tree': this.localTree});
     },
     deleteNodeLocal: function (node) {
-      // console.log("enter delete");
-      // var completePath = this.projectName + '/' + relativePath;
-      // let node = this.$utilHelper.getNode(this.tree, completePath).node;
-      var children = this.$utilHelper.getNode(this.tree, node.path).parentNode.children;
+      var children = this.$utilHelper.getNode(this.localTree, node.path).parentNode.children;
       for (var i = 0, len = children.length; i < len; i++) {
         if (children[i].path === node.path) {
           children.splice(i, 1);
@@ -386,27 +375,67 @@ export default {
         }
       }
       // console.log("after tree", this.tree);
-      if (this.selNode && this.selNode.path === node.path) {
-        this.selNode = null;
+      if (this.localOpenFileOrder.indexOf(node.path) !== -1) {
+        delete this.localOpenFiles[node.path];
+        this.localOpenFileOrder.splice(this.localOpenFileOrder.indexOf(node.path), 1);
+        eventBus.$emit('closeTab', node.path);
+        if (node.path === this.currentFile.path) {
+          var openNum = this.localOpenFileOrder.length;
+          if (openNum) {
+            this.selectNode(this.localOpenFiles[this.localOpenFileOrder[openNum - 1]]);
+          } else {
+            this.selectNode(null);
+          }
+          return;
+        }
+        this.setOpenFiles({'openFiles': this.localOpenFiles});
+        this.setOpenFileOrder({'openFileOrder': this.localOpenFileOrder});
       }
-      this.$emit('deleteNode', node);
-      // v-model双向绑定，更新父组件数据
-      this.tree.switchTo = null;
-      this.$emit('input', this.tree);
+      this.setTree({'tree': this.localTree});
     }
   },
   watch: {
-    value: {
-      handler: function (val, oldVal) {
+    tree: {
+      handler: function (newTree, oldTree) {
         // 深度复制
-        this.tree = JSON.parse(JSON.stringify(val));
-        if (this.tree.switchTo) {
-          // console.log("top");
-          this.selectNode(this.tree.switchTo);
-        }
+        this.localTree = JSON.parse(JSON.stringify(newTree));
+      },
+      deep: true
+    },
+    openFiles: {
+      handler: function (newFiles, oldFiles) {
+        // 深度复制
+        this.localOpenFiles = JSON.parse(JSON.stringify(newFiles));
+      },
+      deep: true
+    },
+    openFileOrder: {
+      handler: function (newOrder, oldOrder) {
+        // 深度复制
+        this.localOpenFileOrder = newOrder.concat();
       },
       deep: true
     }
+  },
+  created: function () {
+    // this.projectName = this.$route.params.projectname;
+    eventBus.$on('callSelNodeFromEditor', this.selectNode);
+    eventBus.$on('createNodeLocal', this.createNodeLocal);
+    eventBus.$on('deleteNodeLocal', this.deleteNodeLocal);
+    eventBus.$on('callNewFileFromMenu', this.addFile);
+    eventBus.$on('callNewFolderFromMenu', this.addFolder);
+  },
+  mounted: function () {
+    window.addEventListener('scroll', this.updateMenuWidth, true);
+    this.$refs.topTree.showChildren = true;
+    this.$refs.topTree.arrow_rotate = { transform: `rotate(90deg)` };
+  },
+  beforeDestroy () {
+    this.setProjectName({'projectName': ''});
+    this.setOpenFiles({'openFiles': {}});
+    this.setOpenFileOrder({'openFileOrder': []});
+    this.setCurrentFile({'currentFile': null});
+    this.setTree({'tree': {}});
   }
 };
 </script>
