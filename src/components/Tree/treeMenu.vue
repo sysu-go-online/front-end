@@ -82,18 +82,17 @@ export default {
       }
       // 通过点击改变展开状态
       this.showChildren = !this.showChildren;
-      // 改变选中状态节点
-      this.$emit('selectNode', this.treeNode);
-
       // 箭头旋转
       if (this.showChildren) {
         this.arrow_rotate = { transform: `rotate(90deg)` };
       } else {
         this.arrow_rotate = { transform: `none` };
       }
-      if (this.treeNode.type === 'file') {
-        this.$emit('openFile', this.treeNode);
-      }
+      // if (this.treeNode.type === 'file') {
+      //   this.$emit('openFile', this.treeNode);
+      // }
+      // 改变选中状态节点
+      this.$emit('selectNode', this.treeNode);
     },
     // 修改当前节点name
     change_node: function () {
