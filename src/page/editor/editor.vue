@@ -4,7 +4,7 @@
       <heads></heads>
     </div>
     <div id="bar">
-      <Menu></Menu>
+      <menubar></menubar>
     </div>
     <div id="main">
       <div id="menu">
@@ -36,7 +36,7 @@ import Header from '../../components/header';
 import Shell from '../../components/shell';
 import Hint from '../../components/hint';
 import Projectview from '../../components/projectview';
-import Menu from '../../components/menu';
+import Menubar from '../../components/menu';
 
 export default {
   name: 'Editor',
@@ -45,7 +45,7 @@ export default {
     heads: Header,
     shell: Shell,
     hint: Hint,
-    Menu, // Menu:Menu,
+    menubar: Menubar,
     'project-view': Projectview
   },
   data () {
