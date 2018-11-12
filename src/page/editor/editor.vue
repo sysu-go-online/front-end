@@ -2,7 +2,7 @@
   <div id="home">
     <div id="header">
       <heads></heads>
-    </div> 
+    </div>
     <div id="bar">
       <Menu></Menu>
     </div>
@@ -44,7 +44,7 @@ export default {
     heads: Header,
     shell: Shell,
     hint: Hint,
-    Menu,
+    Menu, // Menu:Menu,
     'project-view': Projectview
   },
   data () {
@@ -214,7 +214,7 @@ export default {
   cursor: row-resize;
 }
 .shell-section {
-  width: 100%;
+  width: 900px;
   position: absolute;
   bottom: 0;
   height: 200px;
