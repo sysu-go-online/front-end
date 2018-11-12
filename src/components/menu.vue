@@ -1,16 +1,16 @@
 <template>
-    <div id = "menu">        
+    <div id = "menu">
         <mu-menu placement="bottom-start" >
           <mu-button color="black">文件</mu-button>
           <mu-list slot="content">
-            <mu-list-item button>
-              <mu-list-item-title @click='addFlie'>新建文件</mu-list-item-title>
+            <mu-list-item button @click="addFile">
+              <mu-list-item-title>新建文件</mu-list-item-title>
             </mu-list-item>
-            <mu-list-item button>
-              <mu-list-item-title @click='addFolder'>新建文件夹</mu-list-item-title>
+            <mu-list-item button @click='addFolder'>
+              <mu-list-item-title>新建文件夹</mu-list-item-title>
             </mu-list-item>
-            <mu-list-item button>
-              <mu-list-item-title @click='Save'>保存</mu-list-item-title>
+            <mu-list-item button @click='Save'>
+              <mu-list-item-title>保存</mu-list-item-title>
             </mu-list-item>
             <mu-list-item button>
               <mu-list-item-title>另存为</mu-list-item-title>
@@ -53,35 +53,34 @@
             </mu-list-item>
           </mu-list>
         </mu-menu>
-    </div>    
+    </div>
 </template>
 
 <script>
-import evenBus from '../util/eventBus';
-
+import eventBus from '../util/eventBus.js';
 
 export default {
   name: 'menu',
   data () {
     return {
-        //
+
     };
   },
   methods: {
-    addfile: function () {
-        eventBus.$emit('callNewFileFromMenu');
+    addFile: function () {
+      console.log('add file');
+      eventBus.$emit('callNewFileFromMenu');
     },
-    addFolder: function (){
-        eventBus.$emit('callNewFolderFromMenu');
+    addFolder: function () {
+      console.log('add folder');
+      eventBus.$emit('callNewFolderFromMenu');
     },
-    Save: function (){
-        eventBus.$emit('callSaveFromMenu');
+    Save: function () {
+      eventBus.$emit('callSaveFromMenu');
     }
-    
   }
 };
-</script>  
-
+</script>
 <style>
 #menu{
   height: 50px;
