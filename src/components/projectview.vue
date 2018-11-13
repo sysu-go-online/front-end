@@ -77,6 +77,8 @@ export default {
       };
       this.ws.onclose = function () {
         console.log('文件树WS已关闭');
+        console.log('文件树WS正在重新连接');
+        that.initWebSocket();
       };
     },
     getTree: function () {
