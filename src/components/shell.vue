@@ -64,13 +64,13 @@ export default {
           'jwt': that.$cookie.get('jwt'),
           'project': that.projectName,
           'msg': '\n',
-          'language': 0,
+          'language': -2,
           'type': 0,
-          'length': that.term.cols,
-          'width': that.term.rows
+          'height': that.term.rows,
+          'width': that.term.cols + 1
         }));
-        console.log(that.term.cols);
-        console.log(that.term.rows);
+        // console.log(that.term.cols);
+        // console.log(that.term.rows);
         // that.term.writeln('链接建立成功');
       }
       that.ws.onmessage = function (evt) {
@@ -86,9 +86,8 @@ export default {
         if (res.ok) {
           // 输入exit后接收到服务端返回值断开连接并重连
           if (res.msg == "\r\nexit"){
-            that.ws.close();
-            
             // console.log("exit");
+            that.ws.close();
           }
           that.term.write(res.msg);
           return;
@@ -134,7 +133,7 @@ export default {
   mounted() {
     var that = this;
     this.term = this.Xterm();
-    console.log(this.term);
+    // console.log(this.term);
     this.term.on('data', function(key) {
       // TODO: Add event when different key was hit
       // Store command if the connection has not be established
