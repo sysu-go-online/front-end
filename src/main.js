@@ -8,6 +8,8 @@ import router from './router';
 // import Vuex from 'vuex';
 import store from './store/index';
 
+import iView from 'iview';
+import 'iview/dist/styles/iview.css';
 import MuseUI from 'muse-ui';
 import 'muse-ui/dist/muse-ui.css';
 
@@ -15,8 +17,10 @@ import 'muse-ui/dist/muse-ui.css';
 import util from './util/util';
 import log from './util/logger';
 import ax from './lib/axios';
-
+// museUI
 import './assets/icon/iconfont.css';
+// iView
+import './assets/iconfont/iconfont.css';
 
 import VueJWT from 'vuejs-jwt';
 // Tell Vue to use the plugin
@@ -33,9 +37,8 @@ import VuejsDialog from 'vuejs-dialog';
 import 'vuejs-dialog/dist/vuejs-dialog.min.css';
 
 import config from './util/config';
-Vue.use(VueCookie);
 
-// Vue.use(Vuex);
+Vue.use(VueCookie);
 
 Vue.use(VueJWT, {
   signKey: 'go-online',
@@ -57,15 +60,15 @@ Vue.component('font-awesome-icon', FontAwesomeIcon);
 Vue.config.productionTip = false;
 
 Vue.use(MuseUI);
-//  引入vue-resource
-// Vue.use(VueResource)
+Vue.use(iView);
 //  上线后不在显示警告信息
 Vue.config.productionTip = false;
 //  引入log工具
 Vue.prototype.$logHelper = log;
 //  引入工具，配置代理
 Vue.prototype.$utilHelper = util;
-//  引入axios作为http
+// mock
+// ax.defaults.baseURL = 'https://easy-mock.com/mock/5c24f272bf2237296ae2e820';
 Vue.prototype.$http = ax;
 // 引入全局变量
 Vue.prototype.$common = config;
