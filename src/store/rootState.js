@@ -1,8 +1,7 @@
 const state = {
   projectName: '',
-  tree: {},
-  currentFile: null,
-  openFileOrder: [],
+  currentFilepath: '',
+  openFilepathOrder: [],
   openFiles: {}
 };
 
