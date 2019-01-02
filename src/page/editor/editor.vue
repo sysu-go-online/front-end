@@ -98,6 +98,8 @@ export default {
 #mainRight {
   position: relative;
   left: 6px;
+  // 减去分隔条的宽度
+  width: calc(100% - 6px);
 }
 #mainRightTop {
   position: relative;
