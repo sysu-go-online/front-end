@@ -19,6 +19,7 @@
     "@fortawesome/vue-fontawesome": "^0.1.1",
     "axios": "^0.18.0",
     "crypto-js": "^3.1.9-1",
+    "iview": "^3.2.1",
     "monaco-editor": "^0.13.1",
     "monaco-editor-webpack-plugin": "^1.4.0",
     "muse-ui": "^3.0.0-rc.7",
