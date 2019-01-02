@@ -105,9 +105,9 @@ export default {
       // 图片文件
       if (this.showPicture) {
         this.currentCode = '';
-        // let hostname = window.location.hostname;
+        let hostname = window.location.hostname;
         // 测试用
-        let hostname = 'go-online.heartublade.com';
+        // let hostname = 'go-online.heartublade.com';
         this.$http.get('http://image.' + hostname + '/' + this.$cookie.get('username') + '/' + this.currentFilepath, {
           headers: {
             'Authorization': this.$cookie.get('jwt')
