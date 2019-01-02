@@ -1,37 +1,32 @@
 <template>
-  <div id="editor">
-    <div id="function-area">
-      <!-- 标签栏 -->
-      <!-- TODO:
-      2. 标识脏状态
-      3. 文件缩略图-->
-      <span v-if="this.localOpenFileOrder.length">
-        <span v-for="file in this.tabOrder" :key=file.path :class="['tab', {active: file.isSelected}]" @click="switchFile(file.path)">
-          <span class="file-name">{{ file.name }}</span>
-          <!-- TODO:
-          1. 同名时显示路径-->
-          <span class="span_icon">
-            <svg class="icon icon-search-close" @click.stop="checkDirtyThenClose(file.path)"><use xlink:href="#icon-search-close"></use></svg>
+  <layout id='innerEditor'>
+    <i-header id='tabBar'>
+      <div id='tabs'>
+        <span v-for="file in this.tabOrder" :key=file.path :class="['tab', {active: file.selected}]" @click='switchFile(file.path)'>
+          <span class='tabName'>{{ file.name }}</span>
+          <!-- <Icon class='tabIcon dirtyIcon' type='ios-radio-button-on' /> -->
+          <span class='touchArea' @click.stop='checkDirty(file.path)'>
+            <Icon class='tabIcon' :type='iconState[file.path]' @mouseover.native='showClose(file.path)' @mouseout.native='showDirty(file.path, file.dirty)' />
           </span>
         </span>
-      </span>
-      <span id="save"><input type="button" value="保存" id="save-button" @click="Save"></span>
-    </div>
-    <div id="edit-area" v-show="!this.showPicture" @keyup.ctrl.83.stop="Save" @keydown.ctrl.83.prevent>
-      <!-- 编辑区 -->
-      <!-- TODO: 本地缓存 -->
-      <MonacoEditor
-        class="editor"
-        v-model="currentCode"
-        language="go"
-        theme="vs-dark"
-        ref="editor"
-      />
-    </div>
-    <div v-show="this.showPicture" id="img-area">
-      <img :src="this.imgUrl" />
-    </div>
-  </div>
+      </div>
+    </i-header>
+    <i-content id='innerEditorContainer'>
+      <div id="edit-area" v-show="!this.showPicture" @keyup.ctrl.83.stop="save" @keydown.ctrl.83.prevent>
+        <MonacoEditor
+          class="editor"
+          v-model="currentCode"
+          :language="language"
+          theme="vs-dark"
+          :options='editorOptions'
+          ref="editor"
+        />
+      </div>
+      <div id="img-area" v-show="this.showPicture">
+        <img :src="this.imgUrl" />
+      </div>
+    </i-content>
+  </layout>
 </template>
 
 <script>
@@ -43,40 +38,75 @@ export default {
   name: 'Editor',
   data () {
     return {
-      // 已打开文件的信息
-      localOpenFiles: {},
-      // 已打开的所有代码
-      openCodes: new Map(),
-      // 按顺序存储打开文件的绝对路径
-      localOpenFileOrder: [],
-      // 标签的显示顺序
-      tabOrder: {},
-      currentFilePath: '',
-      currentCode: '',
+      showPicture: false,
       imgUrl: '',
-      showPicture: false
+      currentFile: null,
+      // 当前文件的代码
+      currentCode: '',
+      // 已打开的文件代码，path进行索引
+      openCodes: {},
+      // 打开文件的服务器代码，用于对比
+      originalCodes: {},
+      // 标签的显示顺序
+      tabOrder: [],
+      // 标签图标的状态
+      iconState: {},
+      // Monaco设置
+      language: 'go',
+      editorOptions: {
+        readOnly: true,
+        code: '// Welcome to Go-online! \n'
+      }
     };
   },
   computed: {
-    ...mapGetters(['projectName', 'tree', 'currentFile', 'openFiles', 'openFileOrder'])
+    ...mapGetters(['projectName', 'currentFilepath', 'openFiles', 'openFilepathOrder'])
   },
   components: {
     MonacoEditor
   },
   methods: {
-    ...mapActions(['setTree', 'setCurrentFile', 'setOpenFileOrder', 'setOpenFiles']),
-    switchFile: function (filepath) {
-      if (filepath === this.currentFilePath) return;
-      eventBus.$emit('callSelNodeFromEditor', this.localOpenFiles[filepath]);
+    ...mapActions(['setCurrentFilepath', 'setOpenFilepathOrder', 'setOpenFiles']),
+    // 标签的图标切换
+    showClose (path) {
+      this.iconState[path] = 'md-close';
+      this.$forceUpdate();
     },
-    getFile: function (file) {
-      // console.log(file);
-      if (file.isPicture) {
+    showDirty (path, dirty) {
+      if (dirty) {
+        this.iconState[path] = 'ios-radio-button-on';
+        this.$forceUpdate();
+      }
+    },
+    // 从目录树改名时，同步标签栏改名
+    syncName (newPath, oldPath) {
+      let tab = this.tabOrder.find(el => el.path === oldPath);
+      tab.path = newPath;
+      tab.name = newPath.split('/').pop();
+      delete this.iconState[oldPath];
+      this.showClose(newPath);
+      this.showDirty(newPath, tab.dirty);
+      if (!this.showPicture) {
+        // 更新本地代码索引
+        delete this.openCodes[oldPath];
+        this.openCodes[newPath] = this.currentCode;
+        // 更新服务器代码索引
+        let code = this.originalCodes[oldPath];
+        delete this.originalCodes[oldPath];
+        this.originalCodes[newPath] = code;
+      }
+    },
+    switchFile (path) {
+      eventBus.$emit('switchNode', path);
+    },
+    getFile () {
+      // 图片文件
+      if (this.showPicture) {
         this.currentCode = '';
-        var hostname = window.location.hostname;
+        // let hostname = window.location.hostname;
         // 测试用
-        // hostname = 'go-online.heartublade.com';
-        this.$http.get('http://image.' + hostname + '/' + this.$cookie.get('username') + '/' + file.path, {
+        let hostname = 'go-online.heartublade.com';
+        this.$http.get('http://image.' + hostname + '/' + this.$cookie.get('username') + '/' + this.currentFilepath, {
           headers: {
             'Authorization': this.$cookie.get('jwt')
           },
@@ -84,262 +114,253 @@ export default {
           responseType: 'arraybuffer'
         }).then(Response => {
           // console.log(Response);
-          var suffix = file.path.split('.').pop();
+          let suffix = this.currentFilepath.split('.').pop();
           // 待测试
           this.imgUrl = 'data:image/' + suffix + ';base64,' + btoa(new Uint8Array(Response.data).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-          this.tabOrder[file.path] = file;
         }).catch(() => {
-          this.$dialog.alert('太大啦！', {backdropClose: true});
+          this.$Message.warning('太大啦！');
         });
-        return;
-      } else if (this.openCodes.has(file.path)) {
-        this.currentCode = this.openCodes.get(file.path);
-        this.tabOrder[file.path].isSelected = true;
-        return;
+      } else if (this.openCodes[this.currentFilepath]) { // 已打开过则直接从缓存中读取
+        this.currentCode = this.openCodes[this.currentFilepath];
+      } else { // 无缓存则从服务器获取
+        this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + this.currentFilepath, {
+          headers: {'Authorization': this.$cookie.get('jwt')}
+        }).then(Response => {
+          this.currentCode = Response.data.toString();
+          this.openCodes[this.currentFilepath] = this.currentCode;
+          this.originalCodes[this.currentFilepath] = this.currentCode;
+          // this.$forceUpdate();
+        }).catch(() => {
+          this.$Message.error('获取文件内容失败，请刷新页面');
+        });
       }
-      let relativePath = file.path.slice(this.projectName.length + 1);
-      this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
-        headers: {'Authorization': this.$cookie.get('jwt')}
-      }).then(Response => {
-        this.currentCode = Response.data.toString();
-        this.openCodes.set(file.path, this.currentCode);
-        this.tabOrder[file.path] = file;
-        this.$forceUpdate();
-      });
     },
-    Save (filePath) {
-      if (typeof (filePath) !== 'string') {
-        filePath = this.currentFilePath;
+    checkDirty (path) {
+      // console.log('check path', path);
+      let tab = this.tabOrder.find(el => el.path === path);
+      // console.log('check tab', tab);
+      if (tab.dirty) {
+        this.$Modal.confirm({
+          title: '是否要保存对' + tab.name + '的更改？',
+          content: '如果不保存，更改将丢失',
+          okText: '保存',
+          cancelText: '不保存',
+          closable: true,
+          onOk: () => {
+            this.save(path, true);
+          },
+          onCancel: () => {
+            this.closeTab(path);
+          }
+        });
+      } else {
+        this.closeTab(path);
       }
-      console.log(filePath);
-      let file = this.localOpenFiles[filePath];
-      if (file.isSelected) {
-        this.openCodes.set(filePath, this.currentCode);
+    },
+    // close用于判断保存后是否关闭该标签
+    save (path, close = false) {
+      // 快捷键调用时，传入的是事件，默认保存当前文件
+      if (typeof (path) !== 'string') {
+        path = this.currentFilepath;
       }
-      let relativePath = file.path.slice(this.projectName.length + 1);
-      this.$http.patch('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
+      console.log('save', path);
+      if (path === this.currentFilepath) {
+        this.openCodes[path] = this.currentCode;
+      }
+      this.$http.patch('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + path, {
         'operation': 'update',
-        'content': this.openCodes.get(filePath)
+        'content': this.openCodes[path] // 不一定是当前文件
       }, {
         headers: {'Authorization': this.$cookie.get('jwt')}
       }).then(Response => {
-        // TODO：修改为气泡提示格式
-        if (this.tabOrder[filePath]) {
-          this.tabOrder[filePath].isDirty = false;
+        this.originalCodes[path] = this.openCodes[path];
+        this.tabOrder.find(el => el.path === path).dirty = false;
+        if (path === this.currentFilepath) {
+          this.currentFile.dirty = false;
         }
-        this.$dialog.alert('保存成功', {backdropClose: true});
-      }).catch(() => {
-        this.$dialog.alert('保存失败', {backdropClose: true});
+        this.$Message.success('保存成功');
+        if (close) {
+          this.closeTab(path);
+        } else {
+          this.showClose(path);
+        }
+      }).catch((err) => {
+        console.log(err);
+        this.$Message.error('保存失败，请稍后再试');
       });
     },
-    checkDirtyThenClose: function (filePath) {
-      // let file = this.openFiles.get(filePath);
-      // console.log(file);
-      var file = this.tabOrder[filePath];
-      if (file.isDirty) {
-        // 提示是否保存
-        this.$dialog.confirm('是否要保存对 ' + file.name + ' 的更改？', {
-          okText: '是',
-          cancelText: '否',
-          backdropClose: true
-        }).then(() => {
-        // 是
-          this.Save(filePath);
-          this.closeFile(filePath);
-        }).catch(() => {
-          this.closeFile(filePath);
-        });
+    closeTab (path) {
+      // console.log('close path', path);
+      // console.log('currentFilepath', this.currentFilepath);
+      // 清空相关记录
+      // 回溯打开上一文件，故不用清除currentCode
+      delete this.iconState[path];
+      delete this.openCodes[path];
+      delete this.originalCodes[path];
+      let tab = this.tabOrder.find(el => el.path === path);
+      let index = this.tabOrder.indexOf(tab);
+      this.tabOrder.splice(index, 1);
+      let pathOrder = this.openFilepathOrder.concat();
+      let openFiles = JSON.parse(JSON.stringify(this.openFiles));
+      if (path === this.currentFilepath) {
+        // console.log('tabOrder', this.tabOrder);
+        delete openFiles[pathOrder.pop()];
+        // console.log('newOrder', pathOrder);
+        // console.log('newOpenFiles', openFiles);
+        let nextPath = pathOrder[pathOrder.length - 1];
+        this.setOpenFilepathOrder({'openFilepathOrder': pathOrder});
+        this.setOpenFiles({'openFiles': openFiles});
+        this.setCurrentFilepath({'currentFilepath': ''});
+        // console.log('next', nextPath);
+        this.switchFile(nextPath);
       } else {
-        this.closeFile(filePath);
+        pathOrder.splice(pathOrder.indexOf(path), 1);
+        delete openFiles[path];
+        this.setOpenFilepathOrder({'openFilepathOrder': pathOrder});
+        this.setOpenFiles({'openFiles': openFiles});
       }
-    },
-    closeFile: function (filePath) {
-      let file = this.localOpenFiles[filePath];
-      if (file) {
-        // console.log(this.localOpenFileOrder);
-        let indexOfPath = this.localOpenFileOrder.indexOf(filePath);
-        this.localOpenFileOrder.splice(indexOfPath, 1);
-        // console.log(this.localOpenFileOrder);
-        if (file.isSelected) {
-          if (indexOfPath >= 1) {
-            var nextPath = this.localOpenFileOrder[indexOfPath - 1];
-            this.localOpenFileOrder.splice(indexOfPath - 1, 1);
-            this.localOpenFileOrder.push(nextPath);
-            this.switchFile(this.localOpenFileOrder[indexOfPath - 1]);
-            // console.log(this.localOpenFileOrder[indexOfPath - 1]);
-            // console.log(this.localOpenFileOrder);
-          } else { // 若不存在，则文件队列为空，清除当前文件信息
-            this.currentCode = '';
-            this.currentFilePath = '';
-            this.switchFile(null);
-          }
-        }
-        // 删除文件记录及代码记录
-        this.setOpenFileOrder({'openFileOrder': this.localOpenFileOrder});
-        delete this.localOpenFiles[filePath];
-        this.setOpenFiles({'openFiles': this.localOpenFiles});
-        this.openCodes.delete(filePath);
-        delete this.tabOrder[filePath];
-      }
-    },
-    renameTab: function (newFile, oldPath) {
-      delete this.tabOrder[oldPath];
-      this.tabOrder[newFile.path] = newFile;
-    },
-    closeTab: function (tabPath) {
-      delete this.tabOrder[tabPath];
-      this.openCodes.delete(tabPath);
-      this.$forceUpdate();
-    },
-    showPictureWindow: function (state) {
-      this.showPicture = state;
     }
   },
   watch: {
-    currentFile: {
-      handler: function (file, oldFile) {
-        if (!file) return;
-        // 失活上一标签
-        if (JSON.stringify(oldFile) !== '{}' && oldFile) {
-          // 切换文件，更新上一文件代码缓存
-          if (this.localOpenFiles[oldFile.path] && this.tabOrder[oldFile.path]) {
-            this.openCodes.set(oldFile.path, this.currentCode);
-            this.tabOrder[oldFile.path].isSelected = false;
+    currentFilepath: function (newPath, oldPath) {
+      if (!newPath) {
+        this.currentCode = '';
+        this.currentFile = null;
+        this.editorOptions.readOnly = true;
+      } else {
+        if (this.editorOptions.readOnly) {
+          this.editorOptions.readOnly = false;
+        }
+        this.currentFile = JSON.parse(JSON.stringify(this.openFiles[newPath]));
+        this.showPicture = this.currentFile.type === 'image';
+        // 若已存在标签，则修改激活状态
+        let oldTab = this.tabOrder.find(el => el.path === oldPath);
+        let newTab = this.tabOrder.find(el => el.path === newPath);
+        // console.log('oldTab', oldTab);
+        // console.log('newTab', newTab);
+        if (oldTab) {
+          oldTab.selected = false;
+          if (oldTab.dirty) {
+            this.openCodes[oldTab.path] = this.currentCode;
           }
         }
-        this.currentFilePath = file.path;
-        this.localOpenFiles[this.currentFilePath] = file;
-        this.getFile(file);
-      },
-      deep: true
+        if (newTab) {
+          newTab.selected = true;
+        } else { // 否则新建标签
+          this.tabOrder.push(this.currentFile);
+          this.showClose(newPath);
+        }
+        this.getFile();
+      }
     },
-    openFiles: {
-      handler: function (files, oldFiles) {
-        // 深度复制
-        this.localOpenFiles = JSON.parse(JSON.stringify(files));
-      },
-      deep: true
-    },
-    openFileOrder: function (order, oldOrder) {
-      // 深度复制
-      this.localOpenFileOrder = order.concat();
-    },
-    currentCode: function (cCode) {
-      var file = this.tabOrder[this.currentFilePath];
-      if (!file) return;
-      if (!file.isDirty) {
-        let relativePath = file.path.slice(this.projectName.length + 1);
-        this.$http.get('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
-          headers: {'Authorization': this.$cookie.get('jwt')}
-        }).then(Response => {
-          // console.log(Response);
-          if (Response.data.toString() !== cCode) {
-            this.tabOrder[this.currentFilePath].isDirty = true;
-            // console.log('dirty!!!!');
-          }
-        });
+    currentCode: function (newCode) {
+      // 标识脏状态，简单粗暴有待改善
+      if (this.currentFile) {
+        if (!this.currentFile.dirty && this.currentFile.type !== 'image') {
+          this.currentFile.dirty = this.originalCodes[this.currentFilepath] !== newCode;
+          this.tabOrder.find(el => el.path === this.currentFilepath).dirty = this.currentFile.dirty;
+          this.showDirty(this.currentFilepath, this.currentFile.dirty);
+        }
       }
     }
   },
   created: function () {
-    eventBus.$on('renameTab', this.renameTab);
+    eventBus.$on('renameTab', this.syncName);
     eventBus.$on('closeTab', this.closeTab);
-    eventBus.$on('showPicture', this.showPictureWindow);
-    eventBus.$on('callSaveFromMenu', this.Save);
+    // eventBus.$on('showPicture', this.showPictureWindow);
+    eventBus.$on('callSaveFromMenu', this.save);
   }
 };
 
 </script>
 
 <style>
-.editor {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    background: #141414;
-    box-sizing: border-box;
-    display: inline-block;
-    overflow: hidden;
+#innerEditor {
+  position: absolute;
+  height: 100%;
+  width: calc(100% - 6px);
+}
+#innerEditorContainer {
+  position: absolute;
+  top: 35px;
+  margin: 0px;
+  height: calc(100% - 35px);
+  width: 100%;
+  overflow: hidden;
 }
 #edit-area, #img-area {
     position:absolute;
     margin:0;
-    height: calc(100% - 32px);
+    height: 100%;
     width: 100%;
     overflow: hidden;
 }
-#img-area {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-#function-area {
-  height: 32px;
+#tabBar {
+  position: relative;
   width: 100%;
-  background: rgba(17, 17, 17, 0.4);
+  height: 35px;
+  padding: 0px;
+  background-color: #21252B;
+  border-bottom: 1px solid #1E2127;
 }
-#save-button {
-  color: white;
-  padding: 2px 5px;
-  background-color: #009A61;
-  border: none;
-  border-radius: 5px;
-  outline: none;
-}
-.icon-search-close {
-  width: 9px;
-  height: 9px;
-  color: rgba(219, 218, 218, 0.4)
-}
-.func_button {
-    background: rgba(17, 17, 17, 0.4);
-    color: #009A61;
-    margin: 5px;
-    padding: 1px;
-    font-size: 14px;
-    border: solid #009A61 1px;
-    border-radius: 5px;
-    width: 70px;
-    text-align: center;
-}
-/* TODO：修改标签栏样式 */
-.active {
-   background-color: #282C34 !important;
-}
-
-.tab {
-  font-size: 16px;
-  color: #009A61;
-  display: inline-block;
+#tabs {
+  position: absolute;
   height: 100%;
-  min-width: 200px;
-  padding: 3px 10px;
-  border: 1px solid #4e5653;
-  border-left: 0px;
-  background:  rgba(17, 17, 17, 0.4);
-  /* border-color: #2b2b2b  #bebebe #009A61  #bebebe; */
+  padding: 0px;
+  width: auto;
 }
-.tab .span_icon {
-  float: right;
-  visibility: hidden;
-  display: block;
+.editor {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: #141414;
+  box-sizing: border-box;
+  display: inline-block;
+  overflow: hidden;
+}
+.tab {
+  display: inline-block;
+  position: relative;
+  height: 100%;
+  min-width: 150px;
+  padding: 0px;
+  background-color: #21252B;
+  border-right: 1px solid #181A1F;
 }
 .tab:hover {
-  background-color: #323842 !important;
   cursor: pointer;
+  background-color: #323842;
 }
-.tab:hover .span_icon {
-  visibility: visible;
-  /* display: inline-block; */
+.active {
+  background-color: #282C34;
 }
-#save {
+.tabName {
+  display: inline-block;
+  height: 100%;
+  padding: 2px 10px;
+  font-size: 16px;
+}
+.tabIcon {
   display: inline-block;
   position: absolute;
-  top: 5px;
-  right: 10px;
+  top: 2px;
+  right: 2px;
+  color: #C5C5C5;
 }
-.vue-codemirror,.CodeMirror{
-    height: 100% !important;
-    width: 100%;
+.touchArea {
+  display: block;
+  position: absolute;
+  top: 9px;
+  right: 5px;
+  width: 17px;
+  height:17px;
+}
+.dirtyIcon {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+.dirtyIcon:hover {
+  display: none;
 }
 </style>
