@@ -112,5 +112,15 @@ export default {
 }
 .ivu-layout-header {
   line-height: 35px !important;
+  height: 35px;
+  padding: 0px;
+}
+.ivu-layout-footer {
+  padding: 0px;
+}
+.shell-section{
+  border-top-style: groove;
+  border-top-width: 2px;
+  border-top-color: gray;
 }
 </style>
