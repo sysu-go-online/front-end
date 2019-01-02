@@ -66,12 +66,9 @@ export default {
   name: 'Editor',
   components: {
     editor: Editor,
-    // heads: Header,
     shell: Shell,
-    // hint: Hint,
     menubar: Menubar,
     'resource-manager': ResourceManager
-    // 'project-view': Projectview
   },
   data () {
     return {
@@ -129,12 +126,12 @@ export default {
   position: relative;
 }
 .ivu-split-trigger-vertical {
-  background-color: #282C34;
-  border: 1px solid #181A1F;
-  border-left: none;
+  background-color: #282C34 !important;
+  border: 1px solid #181A1F !important;
+  border-left: none !important;
 }
 .ivu-layout-header {
-  line-height: 35px;
+  line-height: 35px !important;
 }
 /*-------------导航菜单样式---------------- */
 // #bar {
