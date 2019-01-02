@@ -41,8 +41,8 @@ export default {
     ...mapActions(['setProjectName', 'setCurrentFilepath', 'setOpenFilepathOrder', 'setOpenFiles']),
     // 初始化WebSocket服务
     initWebSocket () {
-      // let hostname = window.location.hostname;
-      let hostname = 'go-online.heartublade.com';
+      let hostname = window.location.hostname;
+      // let hostname = 'go-online.heartublade.com';
       this.ws = new WebSocket('ws://' + hostname + '/api/ws/dir');
       let that = this;
       this.ws.onopen = function (evt) {
