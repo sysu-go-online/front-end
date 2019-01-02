@@ -1,58 +1,36 @@
 <template>
     <div id = "menu-bar">
-        <mu-menu placement="bottom-start" >
-          <mu-button color="black">文件</mu-button>
-          <mu-list slot="content">
-            <mu-list-item button @click="addFile">
-              <mu-list-item-title>新建文件</mu-list-item-title>
-            </mu-list-item>
-            <mu-list-item button @click="addFolder">
-              <mu-list-item-title>新建文件夹</mu-list-item-title>
-            </mu-list-item>
-            <mu-list-item button @click="Save">
-              <mu-list-item-title>保存</mu-list-item-title>
-            </mu-list-item>
-            <mu-list-item button>
-              <mu-list-item-title>另存为</mu-list-item-title>
-            </mu-list-item>
-          </mu-list>
-        </mu-menu>
-        <mu-menu placement="bottom-start" >
-          <mu-button color="black">编辑</mu-button>
-          <mu-list slot="content">
-            <mu-list-item button>
-              <mu-list-item-title>撤销</mu-list-item-title>
-            </mu-list-item>
-            <mu-list-item button>
-              <mu-list-item-title>恢复</mu-list-item-title>
-            </mu-list-item>
-            <mu-list-item button>
-              <mu-list-item-title>删除</mu-list-item-title>
-            </mu-list-item>
-          </mu-list>
-        </mu-menu>
-        <mu-menu placement="bottom-start" >
-          <mu-button color="black">调试</mu-button>
-          <mu-list slot="content">
-            <mu-list-item button>
-              <mu-list-item-title>编译</mu-list-item-title>
-            </mu-list-item>
-            <mu-list-item button>
-              <mu-list-item-title>运行</mu-list-item-title>
-            </mu-list-item>
-            <mu-list-item button>
-              <mu-list-item-title>编译并运行</mu-list-item-title>
-            </mu-list-item>
-          </mu-list>
-        </mu-menu>
-        <mu-menu placement="bottom-start" >
-          <mu-button color="black">帮助</mu-button>
-          <mu-list slot="content">
-            <mu-list-item button>
-              <mu-list-item-title>？</mu-list-item-title>
-            </mu-list-item>
-          </mu-list>
-        </mu-menu>
+      <Dropdown trigger="click" @on-click="handleFileClick">
+        <Button type="text" ghost>文件</Button>
+        <DropdownMenu slot="list">
+            <DropdownItem name="addFile">新建文件</DropdownItem>
+            <DropdownItem name="addFolder">新建文件夹</DropdownItem>
+            <DropdownItem name="save">保存</DropdownItem>
+        </DropdownMenu>
+      </Dropdown>
+      <Dropdown trigger="click">
+        <Button type="text" ghost disabled>编辑</Button>
+        <DropdownMenu slot="list">
+            <DropdownItem>撤销</DropdownItem>
+            <DropdownItem>恢复</DropdownItem>
+            <DropdownItem>删除</DropdownItem>
+        </DropdownMenu>
+      </Dropdown>
+      <Dropdown trigger="click">
+        <Button type="text" ghost disabled>调试</Button>
+        <DropdownMenu slot="list">
+            <DropdownItem>编译</DropdownItem>
+            <DropdownItem>运行</DropdownItem>
+            <DropdownItem>停止调试</DropdownItem>
+        </DropdownMenu>
+      </Dropdown>
+      <Dropdown trigger="click">
+        <Button type="text" ghost disabled>帮助</Button>
+        <DropdownMenu slot="list">
+            <DropdownItem>更多帮助</DropdownItem>
+        </DropdownMenu>
+      </Dropdown>
+      <Button id="backButton" type="text" ghost><router-link to="/profile/project">返回</router-link></Button>
     </div>
 </template>
 
@@ -67,24 +45,29 @@ export default {
     };
   },
   methods: {
-    addFile: function () {
-      console.log('add file');
-      eventBus.$emit('callNewFileFromMenu');
-    },
-    addFolder: function () {
-      console.log('add folder');
-      eventBus.$emit('callNewFolderFromMenu');
-    },
-    Save: function () {
-      eventBus.$emit('callSaveFromMenu');
+    handleFileClick: function (val) {
+      if (val === 'addFile') {
+        console.log('add file');
+        eventBus.$emit('addFile');
+      } else if (val === 'addFolder') {
+        console.log('add folder');
+        eventBus.$emit('addFolder');
+      } else if (val === 'save') {
+        console.log('save');
+        eventBus.$emit('callSaveFromMenu');
+      } else {
+        console.log('name error');
+      }
     }
   }
 };
 </script>
 <style>
-#menu-bar{
-  height: 50px;
-  width: 100%;
-  box-sizing: border-box;
+#backButton{
+  float: right;
+  font-size: 14px;
+}
+#backButton a{
+  color: white;
 }
 </style>
