@@ -661,11 +661,24 @@ export default {
 }
 #directoryTree {
   position: absolute;
+  overflow: auto;
   height: 100%;
   width: 100%;
 }
-#directoryTree > div.ivu-tree > ul {
-  overflow: hidden;
+/* 自定义滚动条  */
+#directoryTree::-webkit-scrollbar {
+  width: 10px;
+  opacity: 0;
+}
+#directoryTree::-webkit-scrollbar-thumb {
+  opacity: 0.5;
+  background-color: #323842;
+}
+#directoryTree::-webkit-scrollbar-thumb:hover {
+  background-color: #3D4450;
+}
+#directoryTree::-webkit-scrollbar-track {
+  display: none;
 }
 .fileRow:hover {
   background-color: #292D35;
