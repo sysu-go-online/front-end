@@ -28,7 +28,8 @@ export default {
       renamingNode: null,
       newName: '',
       deleting: false,
-      adding: false
+      adding: false,
+      openEditor: false
     };
   },
   computed: {
@@ -41,8 +42,8 @@ export default {
     ...mapActions(['setProjectName', 'setCurrentFilepath', 'setOpenFilepathOrder', 'setOpenFiles']),
     // 初始化WebSocket服务
     initWebSocket () {
-      let hostname = window.location.hostname;
-      // let hostname = 'go-online.heartublade.com';
+      // let hostname = window.location.hostname;
+      let hostname = 'go-online.heartublade.com';
       this.ws = new WebSocket('ws://' + hostname + '/api/ws/dir');
       let that = this;
       this.ws.onopen = function (evt) {
@@ -261,6 +262,8 @@ export default {
           // 失活上一节点
           lastNode.selected = false;
         }
+        this.openEditor = false;
+        eventBus.$emit('closeEditor');
       }
     },
     selectNode (node) {
@@ -288,6 +291,11 @@ export default {
           newOrder.splice(index, 1);
           localOpenFiles[node.node.path].selected = true;
         } else {
+          // 未打开编辑器窗口则打开
+          if (!this.openEditor) {
+            this.openEditor = true;
+            eventBus.$emit('openEditor');
+          }
           var newTab = {
             name: node.node.name,
             type: node.node.type,
