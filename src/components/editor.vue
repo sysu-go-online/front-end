@@ -12,7 +12,7 @@
       </div>
     </i-header>
     <i-content id='innerEditorContainer'>
-      <div id="edit-area" v-show="!this.showPicture" @keyup.ctrl.83.stop="save" @keydown.ctrl.83.prevent>
+      <div id="editArea" v-show="!this.showPicture" @keyup.ctrl.83.stop="save" @keydown.ctrl.83.prevent>
         <MonacoEditor
           class="editor"
           v-model="currentCode"
@@ -22,8 +22,10 @@
           ref="editor"
         />
       </div>
-      <div id="img-area" v-show="this.showPicture">
-        <img :src="this.imgUrl" />
+      <div id="imgArea" v-show="this.showPicture">
+        <div id='imgBox'>
+          <img :src="this.imgUrl" />
+        </div>
       </div>
     </i-content>
   </layout>
@@ -55,7 +57,8 @@ export default {
       language: 'go',
       editorOptions: {
         readOnly: true,
-        code: '// Welcome to Go-online! \n'
+        code: 'Welcome to Go-online! \n',
+        sutomaticLayout: true
       }
     };
   },
@@ -279,6 +282,7 @@ export default {
   position: absolute;
   height: 100%;
   width: calc(100% - 6px);
+  border-bottom: 2px solid #21252B;
 }
 #innerEditorContainer {
   position: absolute;
@@ -288,12 +292,26 @@ export default {
   width: 100%;
   overflow: hidden;
 }
-#edit-area, #img-area {
+#editArea, #imgArea {
     position:absolute;
     margin:0;
     height: 100%;
     width: 100%;
     overflow: hidden;
+}
+#imgArea {
+  text-align: center;
+  display: table;
+}
+#imgBox {
+  display: table-cell;
+  vertical-align: middle;
+  background-image: url('../assets/img/imgBackground.png');
+}
+#imgBox img {
+  /* 临时性修补，不超过容器高度 */
+  max-height: 604px;
+  max-width: 100%;
 }
 #tabBar {
   position: relative;
