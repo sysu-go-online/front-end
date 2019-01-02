@@ -1,14 +1,11 @@
 export const setProjectName = (state, payload) => {
   state.projectName = payload.projectName;
 };
-export const setTree = (state, payload) => {
-  state.tree = JSON.parse(JSON.stringify(payload.tree));
+export const setCurrentFilepath = (state, payload) => {
+  state.currentFilepath = payload.currentFilepath;
 };
-export const setCurrentFile = (state, payload) => {
-  state.currentFile = JSON.parse(JSON.stringify(payload.currentFile));
-};
-export const setOpenFileOrder = (state, payload) => {
-  state.openFileOrder = payload.openFileOrder.concat();
+export const setOpenFilepathOrder = (state, payload) => {
+  state.openFilepathOrder = payload.openFilepathOrder.concat();
 };
 export const setOpenFiles = (state, payload) => {
   state.openFiles = JSON.parse(JSON.stringify(payload.openFiles));
