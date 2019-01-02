@@ -17,9 +17,9 @@
           class="editor"
           v-model="currentCode"
           :language="language"
-          theme="vs-dark"
           :options='editorOptions'
-          ref="editor"
+          theme="vs-dark"
+          ref="monacoEditor"
         />
       </div>
       <div id="imgArea" v-show="this.showPicture">
@@ -44,7 +44,7 @@ export default {
       imgUrl: '',
       currentFile: null,
       // 当前文件的代码
-      currentCode: '',
+      currentCode: '// Welcome to Go-online!',
       // 已打开的文件代码，path进行索引
       openCodes: {},
       // 打开文件的服务器代码，用于对比
@@ -57,8 +57,7 @@ export default {
       language: 'go',
       editorOptions: {
         readOnly: true,
-        code: 'Welcome to Go-online! \n',
-        sutomaticLayout: true
+        automaticLayout: true
       }
     };
   },
@@ -222,6 +221,24 @@ export default {
         this.setOpenFilepathOrder({'openFilepathOrder': pathOrder});
         this.setOpenFiles({'openFiles': openFiles});
       }
+    },
+    changeLanguage (path) {
+      let suffix = path.split('/').pop().split('.').pop();
+      switch (suffix) {
+        case 'go': {
+          this.language = 'go';
+          break;
+        }
+        case 'c': {
+          this.language = 'c';
+          break;
+        }
+        case 'py': {
+          this.language = 'python';
+          break;
+        }
+      }
+      // this.reloadMonaco();
     }
   },
   watch: {
@@ -236,6 +253,10 @@ export default {
         }
         this.currentFile = JSON.parse(JSON.stringify(this.openFiles[newPath]));
         this.showPicture = this.currentFile.type === 'image';
+        // 切换monaco语言选项
+        if (!this.showPicture) {
+          this.changeLanguage(newPath);
+        }
         // 若已存在标签，则修改激活状态
         let oldTab = this.tabOrder.find(el => el.path === oldPath);
         let newTab = this.tabOrder.find(el => el.path === newPath);
