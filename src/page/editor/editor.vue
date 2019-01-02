@@ -11,7 +11,7 @@
           </layout>
           <layout slot='right' id='mainRight'>
             <i-content id='mainRightTop'>
-              <editor></editor>
+              <editor v-show="showEditor"></editor>
             </i-content>
             <i-footer>
               <div class='shell-section' v-bind:class="{'shell-hide': hideShell}">
@@ -27,40 +27,13 @@
         </split>
       </layout>
     </layout>
-    <!--
-    <div id="main">
-      <div id="menu">
-        <div class="menu-icon"><svg class="icon icon-file" @click="showProjectView"><use xlink:href="#icon-file"></use></svg></div>
-        <div class="menu-icon"><svg class="icon icon-terminal" @click="showShell"><use xlink:href="#icon-terminal"></use></svg></div>
-      </div>
-      <div id="main_function">
-        <div id="file_tree" v-bind:class="{'project-view-hide': hideProjectView}">
-          <project-view @openEditor="openEditorWindow" ref="projectView"></project-view>
-        </div>
-        <div id="command_line" v-bind:class="{'project-view-hide': hideProjectView}">
-          <editor v-if="openEditor" @nofileopen="closeEditor" ref='editor'></editor>
-          <div class="shell-section" v-bind:class="{'shell-hide': hideShell}">
-            <shell class="shell-section-shell" @dbname="resolveDbname"></shell>
-              // 注释掉
-            <div class="shell-section-info">
-              <div>二级域名：<a target="_blank" :href="subdomain">{{this.subdomain}}</a></div>
-            </div>
-            // 注释掉
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  -->
 </template>
 <script>
 import Editor from '../../components/editor';
-// import Header from '../../components/header';
 import Shell from '../../components/shell';
-// import Hint from '../../components/hint';
-// import Projectview from '../../components/projectview';
 import Menubar from '../../components/menu';
 import ResourceManager from '../../components/ResourceManager/ResourceManager.vue';
+import eventBus from '../../util/eventBus.js';
 
 export default {
   name: 'Editor',
@@ -72,14 +45,14 @@ export default {
   },
   data () {
     return {
+      // 目录树宽度
       splitLeftRight: '200px',
-      // ---------------------
+      // 代码编辑器状态
+      showEditor: false,
       shellHeight: '200px',
       mouseState: 'up',
       subdomain: '',
-      hideProjectView: false,
-      hideShell: false,
-      openEditor: true
+      hideShell: false
     };
   },
   methods: {
@@ -96,11 +69,15 @@ export default {
       this.hideShell = !this.hideShell;
     },
     closeEditor: function () {
-      this.openEditor = false;
+      this.showEditor = false;
     },
-    openEditorWindow: function () {
-      this.openEditor = true;
+    openEditor: function () {
+      this.showEditor = true;
     }
+  },
+  created () {
+    eventBus.$on('openEditor', this.openEditor);
+    eventBus.$on('closeEditor', this.closeEditor);
   }
 };
 
@@ -124,6 +101,7 @@ export default {
 }
 #mainRightTop {
   position: relative;
+  background-color: #282C34;
 }
 .ivu-split-trigger-vertical {
   background-color: #282C34 !important;
@@ -133,121 +111,4 @@ export default {
 .ivu-layout-header {
   line-height: 35px !important;
 }
-/*-------------导航菜单样式---------------- */
-// #bar {
-//   height: 35px;
-//   width: 100%;
-//   background: black;
-// }
-// #menu {
-//     position: absolute;
-//     left: 0;
-//     height: 100%;
-//     width: 50px;
-//     background: #000;
-//     box-sizing: border-box;
-//     overflow-y: hidden;
-//     overflow-x: hidden;
-//     display: inline-block;
-// }
-// .menu-icon {
-//   color:#009A61;
-//   padding: 10px;
-// }
-// .icon-file, .icon-terminal {
-//   width: 32px !important;
-//   height: 32px !important;
-// }
-
-// #main {
-//     position: relative;
-//     width: 100%;
-//     height: calc(100% - 35px);
-//     background-color: black;
-// }
-// .icon {
-//   display: inline-block;
-//   width: 12px;
-//   height: 12px;
-//   stroke-width: 0;
-//   stroke: currentColor;
-//   fill: currentColor;
-// }
-// /* --------------------------可拖动工作区设置------------------------------------*/
-// #main_function {
-//   position: absolute;
-//   background-color: #292929;
-//   width: calc(100% - 50px);
-//   height: 100%;
-//   overflow: hidden;
-//   left: 50px;
-// }
-// #file_tree {
-//   position: absolute;
-//   margin: 0;
-//   height: 100%;
-//   background-color:  #292929;
-//   transition: transform 0.35s;
-//   width: 200px;
-// }
-// #command_line {
-//   position: absolute;
-//   height: 100%;
-//   box-sizing: border-box;
-//   background: #1e1e1e;
-//   transition: transform 0.35s;
-//   left: 200px;
-//   width: calc(100% - 200px);
-// }
-// .col-resize {
-//   cursor: col-resize;
-// }
-// .row-resize {
-//   cursor: row-resize;
-// }
-// .shell-section {
-//   width: 100%;
-//   position: absolute;
-//   bottom: 0;
-//   height: 200px;
-//   /*
-//   .shell-section-info {
-//     width: 195px;
-//     display: inline-block;
-//     height: 200px;
-//     background: #1e1e1e;
-//     vertical-align: top;
-//     color: white;
-//   }
-//   */
-//   .shell-section-shell {
-//     width: 100% !important;
-//     height: 100%;
-//     display: inline-block;
-//   }
-// }
-// /*
-// .shell-section-shell {
-//   width: calc(100% - 200px) !important;
-//   display: inline-block;
-// }*/
-// #file_tree.project-view-hide {
-//   transform: translate(-200px,0px);
-// }
-// #command_line.project-view-hide {
-//   transform: translate(-200px,0px);
-//   width: 100%;
-// }
-// #command_line.shell-hide {
-
-// }
-// .shell-section.shell-hide {
-//   display: none;
-// }
-
-// /*-------------右键弹窗样式---------------- */
-// a {
-//   color: #333;
-// }
-
 </style>
