@@ -20,7 +20,8 @@ export default {
       ws: null,
       command: '',// 用户输入内容
       key: null, // 获取换行字符对应的字符串; 验证，xterm.js先触发'key'事件，再触发'data'事件
-      projectName: ''
+      projectName: '',
+      times: 0 // 重连计数
       // cols: this.term.cols,
       // row: this.term.rows
     }
@@ -31,7 +32,8 @@ export default {
       //注册终端
       var term = new this.$terminal({
         cursorBlink: true,
-        rows: 10
+        rows: 10,
+      
       })
       term.open(this.$refs.xterm)
       if (term._initialized) {
@@ -47,7 +49,6 @@ export default {
 
       term.writeln('欢迎来到 go-online!')
       term.writeln('Type some keys and commands to play around.')
-      term.writeln('输入命令以建立链接')
       term.writeln('')
       this.terminalFlow(this)
       // term.prompt()
@@ -55,8 +56,9 @@ export default {
       return term
     },
     terminalFlow: function(that) {
-      let hostname = window.location.hostname;
-      // let hostname = "go-online.heartublade.com"
+      console.log(that.times);
+      // let hostname = window.location.hostname;
+      let hostname = "go-online.heartublade.com"
       that.ws = new WebSocket('ws://' + hostname + '/api/ws/tty');
       that.ws.onopen = function(evt) {
         console.log(that.projectName);
@@ -65,10 +67,10 @@ export default {
           'project': that.projectName,
           'msg': '\n',
           'language': -2,
-          'type': 0,
           'height': that.term.rows,
           'width': that.term.cols + 1
         }));
+        // console.log(that.times);
         // console.log(that.term.cols);
         // console.log(that.term.rows);
         // that.term.writeln('链接建立成功');
@@ -99,11 +101,15 @@ export default {
         // }
       }
       that.ws.onclose = function(evt) {
-        // that.term.writeln('链接已关闭，输入命令重新建立链接');
+        that.times++;
         that.term.writeln('链接已断开');
-        that.term.writeln('正在重连');
+        that.term.writeln('正在尝试第'+ that.times +'次重连');
         that.ws = null;
-        that.terminalFlow(that);
+        if(that.times < 10){
+          setTimeout(() => {
+            that.terminalFlow(that);
+          }, 10000); //隔十秒重连一次
+        }  
       }
       that.ws.onerror = function(evt) {
         that.term.writeln('报错');
@@ -115,7 +121,6 @@ export default {
         // 'project': that.projectName,
         'msg': command,
         // 'language': 0,
-        'type': 0
       }));
       // console.log(this.term.cols);
     },
@@ -135,6 +140,7 @@ export default {
     this.term = this.Xterm();
     // console.log(this.term);
     this.term.on('data', function(key) {
+    /*  
       // TODO: Add event when different key was hit
       // Store command if the connection has not be established
       // if (!that.ws) {
@@ -170,6 +176,7 @@ export default {
       // } else {
         // if (that.ws.readyState == 1) {
           // TODO: Send content according to the key code
+    */
           that.terminalSend(key);
           // console.log(this.term.cols);
           // console.log(key);
@@ -180,10 +187,13 @@ export default {
     })
     //console.log(this.term.cols);
     //console.log(this.term.rows);
-    this.term.on('paste', function(data, ev) {
+    
+    //防止粘贴出现重复已注释
+    //this.term.on('paste', function(data, ev) {
       // that.command += data
-      that.terminalSend(data)
-    })
+      //that.terminalSend(data) 
+    //})
+  
     // this.term.on('data', function(str) {
     //   if (!that.ws) {
     //     var pat = /.*/
@@ -207,9 +217,10 @@ export default {
     //     }
     //   }
     // })
+ 
   },
   //关闭websocket
-  destroyed: function () {
+  beforeDestroy () {
     this.ws.close();
   },
   watch: {
@@ -239,3 +250,4 @@ export default {
   overflow: hidden;
 }
 </style>
+~~~
