@@ -1,32 +1,31 @@
 <template>
-  <!-- <div class="layout" id="home"> -->
-    <layout id="editor">
-      <i-header id='top'>
-        <menubar id='menubar'></menubar>
-      </i-header>
-      <layout id='main'>
-        <split v-model='splitLeftRight' min=200 max=600>
-          <layout slot='left' id='mainLeft'>
-            <resource-manager></resource-manager>
-          </layout>
-          <layout slot='right' id='mainRight'>
-            <i-content id='mainRightTop'>
-              <editor v-show="showEditor"></editor>
-            </i-content>
-            <i-footer>
-              <div class='shell-section' v-bind:class="{'shell-hide': hideShell}">
-                <shell class='shell-section-shell' @dbname="resolveDbname"></shell>
-                <!--
-                <div class="shell-section-info">
-                  <div>二级域名：<a target="_blank" :href="subdomain">{{this.subdomain}}</a></div>
-                </div>
-                -->
+  <layout id="editor" @click.native.capture='checkIsRenaming'>
+    <i-header id='top'>
+      <menubar id='menubar'></menubar>
+    </i-header>
+    <layout id='main'>
+      <split v-model='splitLeftRight' min=200 max=600>
+        <layout slot='left' id='mainLeft'>
+          <resource-manager></resource-manager>
+        </layout>
+        <layout slot='right' id='mainRight'>
+          <i-content id='mainRightTop'>
+            <editor v-show="showEditor"></editor>
+          </i-content>
+          <i-footer>
+            <div class='shell-section' v-bind:class="{'shell-hide': hideShell}">
+              <shell class='shell-section-shell' @dbname="resolveDbname"></shell>
+              <!--
+              <div class="shell-section-info">
+                <div>二级域名：<a target="_blank" :href="subdomain">{{this.subdomain}}</a></div>
               </div>
-            </i-footer>
-          </layout>
-        </split>
-      </layout>
+              -->
+            </div>
+          </i-footer>
+        </layout>
+      </split>
     </layout>
+  </layout>
 </template>
 <script>
 import Editor from '../../components/editor';
@@ -59,12 +58,6 @@ export default {
     resolveDbname: function (dbname) {
       this.subdomain = 'http://' + dbname;
     },
-    showProjectView: function () {
-      this.hideProjectView = !this.hideProjectView;
-      this.$nextTick(() => {
-        this.$refs.editor.$refs.editor.getMonaco().layout();
-      });
-    },
     showShell: function () {
       this.hideShell = !this.hideShell;
     },
@@ -73,6 +66,11 @@ export default {
     },
     openEditor: function () {
       this.showEditor = true;
+    },
+    checkIsRenaming (event) {
+      if (event.target.tagName !== 'INPUT') {
+        eventBus.$emit('checkIsRenaming');
+      }
     }
   },
   created () {
@@ -112,11 +110,11 @@ export default {
 }
 .ivu-layout-header {
   line-height: 35px !important;
-  height: 35px;
-  padding: 0px;
+  height: 35px !important;
+  padding: 0px !important;
 }
 .ivu-layout-footer {
-  padding: 0px;
+  padding: 0px !important;;
 }
 .shell-section{
   border-top-style: groove;
