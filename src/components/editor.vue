@@ -4,7 +4,7 @@
       <div id='tabs'>
         <span v-for="file in this.tabOrder" :key=file.path :class="['tab', {active: file.selected}]" @click='switchFile(file.path)'>
           <span class='tabName'>{{ file.name }}</span>
-          <!-- <Icon class='tabIcon dirtyIcon' type='ios-radio-button-on' /> -->
+          <span class='tabPath' v-show='file.showPath'>{{ file.pathToShow }}</span>
           <span class='touchArea' @click.stop='checkDirty(file.path)'>
             <Icon class='tabIcon' :type='iconState[file.path]' @mouseover.native='showClose(file.path)' @mouseout.native='showDirty(file.path, file.dirty)' />
           </span>
@@ -51,6 +51,7 @@ export default {
       originalCodes: {},
       // 标签的显示顺序
       tabOrder: [],
+      UnsaveTabPath: [],
       // 标签图标的状态
       iconState: {},
       // Monaco设置
@@ -77,6 +78,7 @@ export default {
     showDirty (path, dirty) {
       if (dirty) {
         this.iconState[path] = 'ios-radio-button-on';
+        this.UnsaveTabPath.push(path);
         this.$forceUpdate();
       }
     },
@@ -105,10 +107,10 @@ export default {
       // 图片文件
       if (this.showPicture) {
         this.currentCode = '';
-        let hostname = window.location.hostname;
+        // let hostname = window.location.hostname;
         // 测试用
-        // let hostname = 'go-online.heartublade.com';
-        this.$http.get('http://image.' + hostname + '/' + this.$cookie.get('username') + '/' + this.currentFilepath, {
+        let hostname = 'go-online.heartublade.com';
+        this.$http.get('http://image.' + hostname + '/' + this.$cookie.get('username') + '/' + this.projectName + '/' + this.currentFilepath, {
           headers: {
             'Authorization': this.$cookie.get('jwt')
           },
@@ -180,6 +182,8 @@ export default {
         if (path === this.currentFilepath) {
           this.currentFile.dirty = false;
         }
+        let index = this.UnsaveTabPath.indexOf(path);
+        this.UnsaveTabPath.splice(index, 1);
         this.$Message.success('保存成功');
         if (close) {
           this.closeTab(path);
@@ -200,6 +204,12 @@ export default {
       delete this.openCodes[path];
       delete this.originalCodes[path];
       let tab = this.tabOrder.find(el => el.path === path);
+      // 存在同名标签时，再次判断是否仍需要显示路径
+      let sameName = this.tabOrder.filter(el => (el.name === tab.name && el.path !== tab.path));
+      if (sameName.length === 1) {
+        sameName[0].showPath = false;
+        sameName[0].pathToShow = '';
+      }
       let index = this.tabOrder.indexOf(tab);
       this.tabOrder.splice(index, 1);
       let pathOrder = this.openFilepathOrder.concat();
@@ -239,21 +249,37 @@ export default {
         }
       }
       // this.reloadMonaco();
+    },
+    // 生成用于显示的不同的路径
+    // 目前还只是显示完整路径
+    // TODO：多标签时的处理，逻辑稍复杂，参考VSCode
+    generateDiffrentPath (tabs) {
+      let len = tabs.length;
+      for (let i = 0; i < len; i++) {
+        let part = tabs[i].path.split('/');
+        part.pop();
+        tabs[i].pathToShow = part.join('/');
+        tabs[i].showPath = true;
+      }
+      // console.log(tabs);
     }
   },
   watch: {
     currentFilepath: function (newPath, oldPath) {
+      // 关闭所有标签时触发
       if (!newPath) {
         this.currentCode = '';
         this.currentFile = null;
         this.editorOptions.readOnly = true;
       } else {
+        // 打开编辑器时触发
         if (this.editorOptions.readOnly) {
           this.editorOptions.readOnly = false;
         }
         this.currentFile = JSON.parse(JSON.stringify(this.openFiles[newPath]));
+        // 是否为图片文件
         this.showPicture = this.currentFile.type === 'image';
-        // 切换monaco语言选项
+        // 不是则切换monaco语言选项
         if (!this.showPicture) {
           this.changeLanguage(newPath);
         }
@@ -262,6 +288,14 @@ export default {
         let newTab = this.tabOrder.find(el => el.path === newPath);
         // console.log('oldTab', oldTab);
         // console.log('newTab', newTab);
+        // 在已打开的标签上查找同名文件，用于判断是否需要显示路径
+        let sameName = this.tabOrder.filter(el => (el.name === this.currentFile.name));
+        if (!newTab) {
+          sameName.push(this.currentFile);
+        }
+        if (sameName.length > 1) {
+          this.generateDiffrentPath(sameName);
+        }
         if (oldTab) {
           oldTab.selected = false;
           if (oldTab.dirty) {
@@ -289,10 +323,16 @@ export default {
     }
   },
   created: function () {
+    let that = this;
     eventBus.$on('renameTab', this.syncName);
     eventBus.$on('closeTab', this.closeTab);
-    // eventBus.$on('showPicture', this.showPictureWindow);
     eventBus.$on('callSaveFromMenu', this.save);
+    window.onbeforeunload = function (e) {
+      e = e || window.event;
+      if (that.UnsaveTabPath.length) {
+        e.returnValue = '不准走啦淦';
+      }
+    };
   }
 };
 
@@ -361,6 +401,7 @@ export default {
   display: inline-block;
   position: relative;
   height: 100%;
+  width: auto;
   min-width: 150px;
   padding: 0px;
   background-color: #21252B;
@@ -373,11 +414,24 @@ export default {
 .active {
   background-color: #282C34;
 }
-.tabName {
+.tabName, .tabPath {
   display: inline-block;
   height: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tabName {
+  min-width: 75px;
+  max-width: 90%;
   padding: 2px 10px;
   font-size: 16px;
+}
+.tabPath {
+  padding-top: 5px;
+  font-size: 10px;
+  max-width: 40%;
+  color: #6D7074;
 }
 .tabIcon {
   display: inline-block;
