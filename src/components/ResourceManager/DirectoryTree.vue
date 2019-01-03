@@ -1,5 +1,5 @@
 <template>
-  <div id='directoryTree' @contextmenu.prevent='showMenu' @click.prevent='checkIsRenaming'>
+  <div id='directoryTree' @contextmenu.prevent='showMenu'>
     <tree :data="treeData" :render="renderFolder" ref='rootTree'></tree>
     <vue-context ref='menu' id='contextMenu'>
       <ul>
@@ -42,8 +42,8 @@ export default {
     ...mapActions(['setProjectName', 'setCurrentFilepath', 'setOpenFilepathOrder', 'setOpenFiles']),
     // 初始化WebSocket服务
     initWebSocket () {
-      let hostname = window.location.hostname;
-      // let hostname = 'go-online.heartublade.com';
+      // let hostname = window.location.hostname;
+      let hostname = 'go-online.heartublade.com';
       this.ws = new WebSocket('ws://' + hostname + '/api/ws/dir');
       let that = this;
       this.ws.onopen = function (evt) {
@@ -129,7 +129,7 @@ export default {
         }
       } else {
         node.type = 'folder';
-        node.expand = true;
+        node.expand = level === 0;
         node.render = this.renderFolder;
         if (node.children) { // 文件夹则递归处理子文件
           level++;
@@ -211,7 +211,7 @@ export default {
             domProps: {
               type: 'text',
               autofocus: 'autofocus',
-              value: data.name
+              value: ''
             },
             on: {
               input: (event) => {
@@ -273,7 +273,7 @@ export default {
       let lastNode = this.$refs.rootTree.getSelectedNodes()[0];
       if (lastNode) {
         // 选中同一节点，不处理
-        if (lastNode.name === node.node.name) return;
+        if (lastNode.path === node.node.path) return;
         // 失活上一节点
         lastNode.selected = false;
       }
@@ -286,7 +286,9 @@ export default {
         // 已打开文件的信息，由path进行索引
         var localOpenFiles = JSON.parse(JSON.stringify(this.openFiles));
         // 若已打开，则调整文件打开顺序，同时更新激活状态
+        // console.log(newOrder);
         let index = newOrder.indexOf(node.node.path);
+        // console.log(index);
         if (index !== -1) {
           newOrder.splice(index, 1);
           localOpenFiles[node.node.path].selected = true;
@@ -301,10 +303,12 @@ export default {
             type: node.node.type,
             path: node.node.path,
             selected: true,
-            dirty: false
+            dirty: false,
+            showPath: false,
+            pathToShow: ''
           };
           localOpenFiles[node.node.path] = newTab;
-          // eventBug.$emit('addTab', newTab);
+          // console.log(newTab);
         }
         newOrder.push(node.node.path);
         if (lastNode) {
@@ -351,116 +355,67 @@ export default {
     },
     // TODO: 添加命名规则
     addFile () {
-      if (this.renamingNode) {
-        this.checkName();
-      }
-      let name = this.getRandomName();
-      let lastNode = this.$refs.rootTree.getSelectedNodes()[0];
-      let relativePath = '';
-      // console.log(lastNode);
-      if (lastNode) {
-        if (lastNode.type === 'folder') {
-          relativePath = lastNode.path + '/';
-        } else {
-          relativePath = lastNode.path.slice(0, -lastNode.name.length);
-        }
-      }
-      relativePath += name;
-      // console.log(relativePath);
-      // 服务端通信
-      this.adding = true;
-      this.$http.post('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
-        'dir': false
-      }, {
-        headers: {
-          'Authorization': this.$cookie.get('jwt'),
-          'Content-Type': 'application/json'
-        }
-      }).then(Response => {
-        // TO-FIX两种情况，重名/不重名
-        // console.log(Response);
+      if (!this.adding) {
+        this.adding = true;
+        let name = this.getRandomName();
         let children = this.getChildrenSet();
+        let lastNode = this.$refs.rootTree.getSelectedNodes()[0];
+        let relativePath = '';
+        // console.log(lastNode);
         if (lastNode) {
-          // 失活上一节点
-          lastNode.selected = false;
+          if (lastNode.type === 'folder') {
+            relativePath = lastNode.path + '/';
+          } else {
+            relativePath = lastNode.path.slice(0, -lastNode.name.length);
+          }
         }
-        var that = this;
-        children.push({
+        // 在根目录创建时特殊处理，防止和根目录路径一样
+        if (!relativePath) {
+          relativePath = '/';
+        }
+        var newNode = {
           name: name,
           type: 'file',
           path: relativePath,
-          selected: true,
-          rename: false,
-          render: that.renderFile
-        });
-        // this.$forceUpdate();
-        // console.log('addFile', this.rootNode);
-        // 获取更新后的DOM
-        this.$nextTick(() => {
-          this.renameNode();
-          // TODO：通知标签栏打开该文件
-          this.adding = false;
-          // console.log('addFile', this.rootNode);
-        });
-      }).catch(() => {
-        // TODO：说明具体原因？
-        this.adding = false;
-        this.$Message.error('创建失败');
-      });
+          selected: false,
+          rename: true,
+          render: this.renderFile
+        };
+        children.push(newNode);
+        this.renamingNode = newNode;
+      }
     },
     addFolder () {
-      if (this.renamingNode) {
-        this.checkName();
-      }
-      let name = this.getRandomName();
-      let lastNode = this.$refs.rootTree.getSelectedNodes()[0];
-      let relativePath = '';
-      if (lastNode) {
-        if (lastNode.type === 'folder') {
-          relativePath = lastNode.path + '/';
-        } else {
-          relativePath = lastNode.path.slice(0, -lastNode.name.length);
-        }
-      }
-      relativePath += name;
-      // 服务端通信
-      this.adding = true;
-      this.$http.post('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
-        'dir': true
-      }, {
-        headers: {
-          'Authorization': this.$cookie.get('jwt'),
-          'Content-Type': 'application/json'
-        }
-      }).then(Response => {
-        // TO-FIX两种情况，重名/不重名
-        // console.log(Response);
+      if (!this.adding) {
+        this.adding = true;
+        let name = this.getRandomName();
         let children = this.getChildrenSet();
+        let lastNode = this.$refs.rootTree.getSelectedNodes()[0];
+        let relativePath = '';
+        // console.log(lastNode);
         if (lastNode) {
-          // 失活上一节点
-          lastNode.selected = false;
+          if (lastNode.type === 'folder') {
+            relativePath = lastNode.path + '/';
+          } else {
+            relativePath = lastNode.path.slice(0, -lastNode.name.length);
+          }
         }
-        var that = this;
-        children.push({
+        if (!relativePath) {
+          relativePath = '/';
+        }
+        var newNode = {
           name: name,
           type: 'folder',
           path: relativePath,
           expand: true,
-          selected: true,
-          rename: false,
-          render: that.renderFolder,
+          selected: false,
+          rename: true,
+          render: this.renderFolder,
           children: []
-        });
-        // 获取更新后的DOM
-        this.$nextTick(() => {
-          this.renameNode();
-          this.adding = false;
-        });
-      }).catch(() => {
-        // TODO：说明具体原因？
-        this.adding = false;
-        this.$Message.error('创建失败');
-      });
+        };
+        children.push(newNode);
+        this.renamingNode = newNode;
+      }
     },
     // 本地添加节点：用于服务端添加而本地未添加时
     // 假定上一级目录已存在
@@ -501,15 +456,19 @@ export default {
       currentNode.rename = true;
     },
     checkIsRenaming (event) {
-      // console.log(event);
-      if (event.target.tagName !== 'INPUT' && event.target.textContent !== '重命名' && this.renamingNode) {
+      if (this.renamingNode) {
         this.checkName();
       }
     },
     checkName () {
       let hasSame = false;
-      // 为空直接不处理
-      if (this.newName && this.newName !== this.renamingNode.name) {
+      // 新建文件/已存在的文件重命名
+      if (this.adding || (this.newName && this.newName !== this.renamingNode.name)) {
+        // 新建文件空名字，则取消新建文件
+        if (this.adding && !this.newName) {
+          this.resetState(true);
+          return;
+        }
         let parentKey = this.rootNode.find(el => el.nodeKey === this.renamingNode.nodeKey).parent;
         let sibling = this.rootNode.find(el => el.nodeKey === parentKey).node.children;
         let that = this;
@@ -519,64 +478,91 @@ export default {
           }
         });
         if (!hasSame) {
-          let relativeOldPath = this.renamingNode.path;
-          let relativeNewPath = relativeOldPath.slice(0, -this.renamingNode.name.length) + this.newName;
-          // console.log('old', relativeOldPath);
-          // console.log('new', relativeNewPath);
-          this.renaming = true;
-          this.$http.patch('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativeOldPath, {
-            'operation': 'rename',
-            'content': relativeNewPath
-          }, {
-            headers: {'Authorization': this.$cookie.get('jwt')}
-          }).then(Response => {
+          // 新建文件
+          if (this.adding) {
             this.renamingNode.name = this.newName;
-            this.renamingNode.path = relativeNewPath;
-            // 若已打开该文件，则通知编辑器也同步改名
-            let newOrder = this.openFilepathOrder.concat();
-            // console.log(newOrder);
-            let index = newOrder.indexOf(relativeOldPath);
-            if (index !== -1) {
-              var localOpenFiles = JSON.parse(JSON.stringify(this.openFiles));
-              localOpenFiles[relativeNewPath] = {
-                name: this.newName,
-                type: localOpenFiles[relativeOldPath].type,
-                path: relativeNewPath,
-                selected: localOpenFiles[relativeOldPath].selected,
-                dirty: localOpenFiles[relativeOldPath].dirty
-              };
-              delete localOpenFiles[relativeOldPath];
-              newOrder[index] = relativeNewPath;
-              eventBus.$emit('renameTab', relativeNewPath, relativeOldPath);
-              this.setOpenFiles({'openFiles': localOpenFiles});
-              this.setOpenFilepathOrder({'openFilepathOrder': newOrder});
-              if (relativeOldPath === this.currentFilepath) {
-                this.setCurrentFilepath({'currentFilepath': relativeNewPath});
+            this.renamingNode.path += this.newName;
+            this.$http.post('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + this.renamingNode.path, {
+              'dir': this.renamingNode.type === 'folder'
+            }, {
+              headers: {
+                'Authorization': this.$cookie.get('jwt'),
+                'Content-Type': 'application/json'
               }
-            }
-            this.resetState();
-            this.$Message.success('重命名成功');
-          }).catch((err) => {
-            console.log(err);
-            this.resetState();
-            this.$Message.warning('重命名失败，请稍后再试');
-          });
+            }).then(Response => {
+              this.resetState();
+            }).catch(() => {
+              this.resetState(true);
+              // TODO：说明具体原因？
+              this.$Message.error('创建失败');
+            });
+          } else { // 重命名
+            let relativeOldPath = this.renamingNode.path;
+            let relativeNewPath = relativeOldPath.slice(0, -this.renamingNode.name.length) + this.newName;
+            // console.log('old', relativeOldPath);
+            // console.log('new', relativeNewPath);
+            this.renaming = true;
+            this.$http.patch('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativeOldPath, {
+              'operation': 'rename',
+              'content': relativeNewPath
+            }, {
+              headers: {'Authorization': this.$cookie.get('jwt')}
+            }).then(Response => {
+              this.renamingNode.name = this.newName;
+              this.renamingNode.path = relativeNewPath;
+              // 若已打开该文件，则通知编辑器也同步改名
+              let newOrder = this.openFilepathOrder.concat();
+              // console.log(newOrder);
+              let index = newOrder.indexOf(relativeOldPath);
+              if (index !== -1) {
+                var localOpenFiles = JSON.parse(JSON.stringify(this.openFiles));
+                localOpenFiles[relativeNewPath] = {
+                  name: this.newName,
+                  type: localOpenFiles[relativeOldPath].type,
+                  path: relativeNewPath,
+                  selected: localOpenFiles[relativeOldPath].selected,
+                  dirty: localOpenFiles[relativeOldPath].dirty
+                };
+                delete localOpenFiles[relativeOldPath];
+                newOrder[index] = relativeNewPath;
+                eventBus.$emit('renameTab', relativeNewPath, relativeOldPath);
+                this.setOpenFiles({'openFiles': localOpenFiles});
+                this.setOpenFilepathOrder({'openFilepathOrder': newOrder});
+                if (relativeOldPath === this.currentFilepath) {
+                  this.setCurrentFilepath({'currentFilepath': relativeNewPath});
+                }
+              }
+              this.resetState();
+              this.$Message.success('重命名成功');
+            }).catch((err) => {
+              console.log(err);
+              this.resetState();
+              this.$Message.warning('重命名失败，请稍后再试');
+            });
+          }
         } else {
-          this.resetState();
-          // 重命名失败，有名字冲突
-          this.$Message.error('重命名失败，名字冲突');
+          this.$Message.error('存在名字冲突');
+          this.resetState(true);
         }
       } else {
         this.resetState();
       }
     },
-    resetState () {
+    resetState (failed = false) {
+      if (this.adding) {
+        // 创建失败，删除本地节点
+        if (failed) {
+          let newNode = this.getNodeByPath(this.renamingNode.path);
+          this.deleteNodeLocal(newNode);
+        }
+        // 过滤ws的请求
+        this.$nextTick(() => {
+          this.adding = false;
+        });
+      }
       this.renamingNode.rename = false;
       this.newName = '';
       this.renamingNode = null;
-      this.$nextTick(() => {
-        this.renaming = false;
-      });
     },
     // 递归关闭文件夹内已打开的文件标签
     deleteFolder (node) {
@@ -623,6 +609,7 @@ export default {
     },
     deleteNodeLocal (node) {
       let parentKey = this.rootNode.find(el => el.nodeKey === node.nodeKey).parent;
+      // console.log(parentKey);
       let children = this.rootNode.find(el => el.nodeKey === parentKey).node.children;
       // 若是文件夹，则检查其子文件是否已打开，打开则关闭标签
       if (node.type === 'folder') {
@@ -648,6 +635,7 @@ export default {
     eventBus.$on('addFolder', this.addFolder);
     eventBus.$on('syncTree', this.syncTree);
     eventBus.$on('switchNode', this.selectNodeByPath);
+    eventBus.$on('checkIsRenaming', this.checkIsRenaming);
   },
   beforeDestroy () {
     this.ws.close();
@@ -680,6 +668,7 @@ export default {
 #directoryTree::-webkit-scrollbar-track {
   display: none;
 }
+
 .fileRow:hover {
   background-color: #292D35;
   cursor: pointer;
