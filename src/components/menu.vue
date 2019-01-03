@@ -1,37 +1,37 @@
 <template>
-    <div id = "menu-bar">
-      <Dropdown trigger="click" @on-click="handleFileClick">
-        <Button type="text" ghost>文件</Button>
-        <DropdownMenu slot="list">
-            <DropdownItem name="addFile">新建文件</DropdownItem>
-            <DropdownItem name="addFolder">新建文件夹</DropdownItem>
-            <DropdownItem name="save">保存</DropdownItem>
-        </DropdownMenu>
-      </Dropdown>
-      <Dropdown trigger="click">
-        <Button type="text" ghost disabled>编辑</Button>
-        <DropdownMenu slot="list">
-            <DropdownItem>撤销</DropdownItem>
-            <DropdownItem>恢复</DropdownItem>
-            <DropdownItem>删除</DropdownItem>
-        </DropdownMenu>
-      </Dropdown>
-      <Dropdown trigger="click">
-        <Button type="text" ghost disabled>调试</Button>
-        <DropdownMenu slot="list">
-            <DropdownItem>编译</DropdownItem>
-            <DropdownItem>运行</DropdownItem>
-            <DropdownItem>停止调试</DropdownItem>
-        </DropdownMenu>
-      </Dropdown>
-      <Dropdown trigger="click">
-        <Button type="text" ghost disabled>帮助</Button>
-        <DropdownMenu slot="list">
-            <DropdownItem>更多帮助</DropdownItem>
-        </DropdownMenu>
-      </Dropdown>
-      <Button id="backButton" type="text" ghost><router-link to="/profile/project">返回</router-link></Button>
-    </div>
+  <div id="menubar">
+    <Dropdown trigger="click" @on-click="handleFileClick">
+      <Button class='optionButton' type="text" ghost>文件</Button>
+      <DropdownMenu class='optionMenu' slot="list">
+        <DropdownItem name="addFile">新建文件</DropdownItem>
+        <DropdownItem name="addFolder">新建文件夹</DropdownItem>
+        <DropdownItem name="save">保存</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <Dropdown trigger="click">
+      <Button class='optionButton' type="text" ghost>编辑</Button>
+      <DropdownMenu class='optionMenu' slot="list">
+        <DropdownItem disabled>撤销</DropdownItem>
+        <DropdownItem disabled>恢复</DropdownItem>
+        <DropdownItem disabled>删除</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <Dropdown trigger="click">
+      <Button class='optionButton' type="text" ghost>调试</Button>
+      <DropdownMenu class='optionMenu' slot="list">
+        <DropdownItem disabled>编译</DropdownItem>
+        <DropdownItem disabled>运行</DropdownItem>
+        <DropdownItem disabled>停止调试</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <Dropdown  trigger="click">
+      <Button class='optionButton' type="text" ghost>帮助</Button>
+      <DropdownMenu class='optionMenu' slot="list">
+        <DropdownItem>更多帮助</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <Button id="backButton" class="optionButton" type="text" ghost><router-link to="/profile/project">返回</router-link></Button>
+  </div>
 </template>
 
 <script>
@@ -63,11 +63,41 @@ export default {
 };
 </script>
 <style>
-#backButton{
+#menubar {
+  background-color: #282C34;
+  color: #9DA5B4;
+}
+.optionButton {
+  color: #9DA5B4;
+}
+.optionButton:focus {
+  outline: 0;
+}
+.optionButton:hover {
+  color: #9DA5B4 !important;
+  background-color: #3E4249 !important;
+}
+#menubar .ivu-select-dropdown {
+  background-color: #21252B;
+  border-top: none;
+  border-right: 1px inset #000;
+  border-left: 1px inset #000;
+  border-bottom: 1px outset #000;
+}
+.optionMenu {
+  background-color: #21252B;
+}
+.optionMenu .ivu-dropdown-item {
+  color: white;
+}
+.optionMenu .ivu-dropdown-item:hover {
+  background-color: #2C313A;
+}
+#backButton {
   float: right;
   font-size: 14px;
 }
-#backButton a{
-  color: white;
+#backButton a {
+  color: #9DA5B4;
 }
 </style>
