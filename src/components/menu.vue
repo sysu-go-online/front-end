@@ -1,6 +1,6 @@
 <template>
   <div id="menubar">
-    <Dropdown placement="bottom-start" trigger="click" @on-click="handleFileClick">
+    <Dropdown trigger="click" @on-click="handleFileClick">
       <Button class='optionButton' type="text" ghost>文件</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem name="addFile">新建文件</DropdownItem>
@@ -8,26 +8,26 @@
         <DropdownItem name="save">保存</DropdownItem>
       </DropdownMenu>
     </Dropdown>
-    <Dropdown placement="bottom-start" trigger="click">
-      <Button disabled class='optionButton' type="text" ghost>编辑</Button>
+    <Dropdown trigger="click">
+      <Button class='optionButton' type="text" ghost>编辑</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem disabled>撤销</DropdownItem>
         <DropdownItem disabled>恢复</DropdownItem>
         <DropdownItem disabled>删除</DropdownItem>
       </DropdownMenu>
     </Dropdown>
-    <Dropdown placement="bottom-start" trigger="click">
-      <Button disabled class='optionButton' type="text" ghost>调试</Button>
+    <Dropdown trigger="click">
+      <Button class='optionButton' type="text" ghost>调试</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem disabled>编译</DropdownItem>
         <DropdownItem disabled>运行</DropdownItem>
         <DropdownItem disabled>停止调试</DropdownItem>
       </DropdownMenu>
     </Dropdown>
-    <Dropdown placement="bottom-start" trigger="click">
-      <Button disabled class='optionButton' type="text" ghost>帮助</Button>
+    <Dropdown trigger="click">
+      <Button class='optionButton' type="text" ghost>帮助</Button>
       <DropdownMenu class='optionMenu' slot="list">
-        <DropdownItem>更多帮助</DropdownItem>
+        <DropdownItem disabled>更多帮助</DropdownItem>
       </DropdownMenu>
     </Dropdown>
     <Button id="backButton" class="optionButton" type="text" ghost><router-link to="/profile/project">返回</router-link></Button>
