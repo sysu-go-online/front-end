@@ -9,7 +9,7 @@
       </DropdownMenu>
     </Dropdown>
     <Dropdown placement="bottom-start" trigger="click">
-      <Button class='optionButton' type="text" ghost>编辑</Button>
+      <Button disabled class='optionButton' type="text" ghost>编辑</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem disabled>撤销</DropdownItem>
         <DropdownItem disabled>恢复</DropdownItem>
@@ -17,7 +17,7 @@
       </DropdownMenu>
     </Dropdown>
     <Dropdown placement="bottom-start" trigger="click">
-      <Button class='optionButton' type="text" ghost>调试</Button>
+      <Button disabled class='optionButton' type="text" ghost>调试</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem disabled>编译</DropdownItem>
         <DropdownItem disabled>运行</DropdownItem>
@@ -25,7 +25,7 @@
       </DropdownMenu>
     </Dropdown>
     <Dropdown placement="bottom-start" trigger="click">
-      <Button class='optionButton' type="text" ghost>帮助</Button>
+      <Button disabled class='optionButton' type="text" ghost>帮助</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem>更多帮助</DropdownItem>
       </DropdownMenu>
