@@ -29,6 +29,7 @@ export default {
       newName: '',
       deleting: false,
       adding: false,
+      updating: false,
       openEditor: false
     };
   },
@@ -67,7 +68,7 @@ export default {
           if (data.state === -1) { // 文件夹监听成功
             // 暂时不用处理
           } else if (data.state === 0) { // 文件被创建
-            if (!that.adding && !that.renamingNode) {
+            if (!that.adding && !that.updating && !that.renamingNode) {
               let changedNode = that.getNodeByPath(data.path);
               // console.log('aim', data.path);
               // console.log('rootNode', that.rootNode);
@@ -78,7 +79,7 @@ export default {
               }
             }
           } else if (data.state === 1) { // 文件被删除
-            if (!that.deleting) {
+            if (!that.deleting && !that.updating) {
               let changedNode = that.getNodeByPath(data.path);
               if (changedNode) {
                 that.deleteNodeLocal(changedNode);
@@ -211,7 +212,7 @@ export default {
             domProps: {
               type: 'text',
               autofocus: 'autofocus',
-              value: ''
+              value: data.name
             },
             on: {
               input: (event) => {
@@ -374,7 +375,7 @@ export default {
           relativePath = '/';
         }
         var newNode = {
-          name: name,
+          name: '',
           type: 'file',
           path: relativePath,
           selected: false,
@@ -404,7 +405,7 @@ export default {
           relativePath = '/';
         }
         var newNode = {
-          name: name,
+          name: '',
           type: 'folder',
           path: relativePath,
           expand: true,
@@ -482,6 +483,7 @@ export default {
           if (this.adding) {
             this.renamingNode.name = this.newName;
             this.renamingNode.path += this.newName;
+            this.updating = true;
             this.$http.post('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + this.renamingNode.path, {
               'dir': this.renamingNode.type === 'folder'
             }, {
@@ -490,10 +492,14 @@ export default {
                 'Content-Type': 'application/json'
               }
             }).then(Response => {
+              this.$nextTick(() => {
+                this.updating = false;
+              });
               this.resetState();
             }).catch(() => {
               this.resetState(true);
               // TODO：说明具体原因？
+              this.updating = false;
               this.$Message.error('创建失败');
             });
           } else { // 重命名
@@ -501,7 +507,7 @@ export default {
             let relativeNewPath = relativeOldPath.slice(0, -this.renamingNode.name.length) + this.newName;
             // console.log('old', relativeOldPath);
             // console.log('new', relativeNewPath);
-            this.renaming = true;
+            this.updaing = true;
             this.$http.patch('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativeOldPath, {
               'operation': 'rename',
               'content': relativeNewPath
@@ -532,10 +538,14 @@ export default {
                   this.setCurrentFilepath({'currentFilepath': relativeNewPath});
                 }
               }
+              this.$nextTick(() => {
+                this.updating = false;
+              });
               this.resetState();
               this.$Message.success('重命名成功');
             }).catch((err) => {
               console.log(err);
+              this.updating = false;
               this.resetState();
               this.$Message.warning('重命名失败，请稍后再试');
             });
@@ -591,16 +601,19 @@ export default {
         onOk: () => {
           let relativePath = node.path;
           this.deleting = true;
+          this.updating = true;
           this.$http.delete('/api/users/' + this.$cookie.get('username') + '/projects/' + this.projectName + '/files/' + relativePath, {
             headers: {'Authorization': this.$cookie.get('jwt')}
           }).then(Response => {
             this.deleteNodeLocal(node);
             this.$nextTick(() => {
               this.deleting = false;
+              this.updating = false;
             });
             this.$Message.success('删除成功');
           }).catch(() => {
             this.deleting = false;
+            this.updating = false;
             this.$Message.error('删除失败');
           });
         },
