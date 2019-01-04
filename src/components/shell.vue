@@ -133,7 +133,7 @@ export default {
     terminalSizeSend: function(cols, rows){
       this.ws.send(JSON.stringify({
         'msg': '',
-        'length': rows,
+        'height': rows,
         'width': cols
       }));
     },
