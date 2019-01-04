@@ -10,6 +10,7 @@ import { Terminal } from 'xterm'
 import 'xterm/dist/xterm.css'
 import 'xterm/dist/xterm.js'
 import * as fit from 'xterm/lib/addons/fit/fit.js'
+import eventBus from '../util/eventBus.js'
 
 Object.defineProperty(Vue.prototype, '$terminal', { value: Terminal })
 export default {
@@ -23,17 +24,20 @@ export default {
       projectName: '',
       times: 0 // 重连计数
       // cols: this.term.cols,
-      // row: this.term.rows
+      // row: this.term.rows,
+      // terminalHeight: this.$refs.xterm.clientHeight, // 监听div宽高 初始设为0
+      // terminalWidth: 0
     }
   },
   methods: {
     Xterm: function() {
       this.$terminal.applyAddon(fit);
-      //注册终端
+      // 注册终端
       var term = new this.$terminal({
         cursorBlink: true,
         rows: 10,
-      
+        lineHeight: 1.2
+        // tabStopWidth: 10  
       })
       term.open(this.$refs.xterm)
       if (term._initialized) {
@@ -56,9 +60,9 @@ export default {
       return term
     },
     terminalFlow: function(that) {
-      console.log(that.times);
-      // let hostname = window.location.hostname;
-      let hostname = "go-online.heartublade.com"
+      // console.log(that.times);
+      let hostname = window.location.hostname;
+      // let hostname = "go-online.heartublade.com"
       that.ws = new WebSocket('ws://' + hostname + '/api/ws/tty');
       that.ws.onopen = function(evt) {
         console.log(that.projectName);
@@ -71,8 +75,8 @@ export default {
           'width': that.term.cols + 1
         }));
         // console.log(that.times);
-        // console.log(that.term.cols);
-        // console.log(that.term.rows);
+        console.log(that.term.cols);
+        console.log(that.term.rows);
         // that.term.writeln('链接建立成功');
       }
       that.ws.onmessage = function (evt) {
@@ -105,6 +109,7 @@ export default {
         that.term.writeln('链接已断开');
         that.term.writeln('正在尝试第'+ that.times +'次重连');
         that.ws = null;
+        // console.log(that.term.cols);
         if(that.times < 10){
           setTimeout(() => {
             that.terminalFlow(that);
@@ -127,18 +132,62 @@ export default {
     // 发送终端宽高
     terminalSizeSend: function(cols, rows){
       this.ws.send(JSON.stringify({
+        'msg': '',
         'length': rows,
         'width': cols
       }));
+    },
+    fixSize (){
+      if(this.term) {
+        this.term.fit();
+        var cols = this.term.cols + 1;
+        var rows = this.term.rows;
+        this.terminalSizeSend(cols,rows);
+        // console.log("size fixed");
+        // console.log(this.term.cols);
+      }
     }
   },
+  /*
+  watch: {
+    terminalHeight: function(){
+      term.fit();
+      console.log("height changed");
+    },
+    terminalWidth: function(){
+      term.fit();
+      console.log("width changed");
+    }
+  },
+  */
   created() {
     this.projectName = this.$route.params.projectname;
+    eventBus.$on('fixSize', this.fixSize);
   },
   mounted() {
     var that = this;
     this.term = this.Xterm();
     // console.log(this.term);
+    /*
+    // 获取div的宽高
+    this.terminalHeight = this.$refs.xterm.clientHeight;
+    this.terminalWidth = this.$refs.xterm.clientWidth;
+    //var parentStyle = window.getComputedStyle(that.term.element.parentStyle);
+    console.log(that.terminalHeight);
+    console.log(that.terminalWidth);
+    //console.log(this.terminalHeight);
+    //console.log(this.terminalWidth);
+      setInterval(() => {
+        //that.term.fit();
+        // that.terminalHeight = that.$refs.xterm.clientHeight;
+        // that.terminalWidth = that.$refs.xterm.clientWidth;
+        var parentStyle = window.getComputedStyle(that.term.element.parentElement);
+        var parentWidth = parseInt(parentStyle.getPropertyValue('width'));
+        console.log(that.terminalHeight);
+        console.log(that.terminalWidth);
+      }, 2000);
+    */
+    
     this.term.on('data', function(key) {
     /*  
       // TODO: Add event when different key was hit
@@ -184,11 +233,11 @@ export default {
       //     // TODO: Store message when the ws is connecting and send message when the connection has been send
       //   }
       // }
-    })
+    });
     //console.log(this.term.cols);
     //console.log(this.term.rows);
     
-    //防止粘贴出现重复已注释
+    //防止粘贴出现重复
     //this.term.on('paste', function(data, ev) {
       // that.command += data
       //that.terminalSend(data) 
@@ -249,5 +298,16 @@ export default {
   box-sizing: border-box;
   overflow: hidden;
 }
+.xterm-viewport{
+  overflow: hidden !important;
+}
+/*
+.xterm-screen{
+  width: 100% !important;
+}
+
+.xterm-link-layer, .xterm-selection-layer{
+  width: 100% !important;
+}
+*/
 </style>
-~~~
