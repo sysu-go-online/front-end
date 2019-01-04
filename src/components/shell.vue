@@ -107,13 +107,13 @@ export default {
       that.ws.onclose = function(evt) {
         that.times++;
         that.term.writeln('链接已断开');
-        that.term.writeln('正在尝试第'+ that.times +'次重连');
+        that.term.writeln('5s后尝试第'+ that.times +'次重连');
         that.ws = null;
         // console.log(that.term.cols);
         if(that.times < 10){
           setTimeout(() => {
             that.terminalFlow(that);
-          }, 10000); //隔十秒重连一次
+          }, 5000); //隔十秒重连一次
         }  
       }
       that.ws.onerror = function(evt) {
