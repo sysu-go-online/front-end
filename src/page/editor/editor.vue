@@ -4,7 +4,7 @@
       <menubar id='menubar'></menubar>
     </i-header>
     <layout id='main'>
-      <split v-model='splitLeftRight' min=200 max=600>
+      <split v-model='splitLeftRight' min=200 max=600 @on-move-end='fixShell'>
         <layout slot='left' id='mainLeft'>
           <resource-manager></resource-manager>
         </layout>
@@ -71,6 +71,9 @@ export default {
       if (event.target.tagName !== 'INPUT') {
         eventBus.$emit('checkIsRenaming');
       }
+    },
+    fixShell () {
+      eventBus.$emit('fixSize');
     }
   },
   created () {
