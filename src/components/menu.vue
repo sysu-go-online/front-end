@@ -1,6 +1,6 @@
 <template>
   <div id="menubar">
-    <Dropdown trigger="click" @on-click="handleFileClick">
+    <Dropdown placement="bottom-start" trigger="click" @on-click="handleFileClick">
       <Button class='optionButton' type="text" ghost>文件</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem name="addFile">新建文件</DropdownItem>
@@ -8,7 +8,7 @@
         <DropdownItem name="save">保存</DropdownItem>
       </DropdownMenu>
     </Dropdown>
-    <Dropdown trigger="click">
+    <Dropdown placement="bottom-start" trigger="click">
       <Button class='optionButton' type="text" ghost>编辑</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem disabled>撤销</DropdownItem>
@@ -16,7 +16,7 @@
         <DropdownItem disabled>删除</DropdownItem>
       </DropdownMenu>
     </Dropdown>
-    <Dropdown trigger="click">
+    <Dropdown placement="bottom-start" trigger="click">
       <Button class='optionButton' type="text" ghost>调试</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem disabled>编译</DropdownItem>
@@ -24,7 +24,7 @@
         <DropdownItem disabled>停止调试</DropdownItem>
       </DropdownMenu>
     </Dropdown>
-    <Dropdown  trigger="click">
+    <Dropdown placement="bottom-start" trigger="click">
       <Button class='optionButton' type="text" ghost>帮助</Button>
       <DropdownMenu class='optionMenu' slot="list">
         <DropdownItem>更多帮助</DropdownItem>
