@@ -95,6 +95,7 @@ export default {
             // console.log("exit");
             that.ws.close();
           }
+          that.times = 0; // 连接成功后重置连接次数
           that.term.write(res.msg);
           return;
         }
@@ -107,7 +108,7 @@ export default {
       that.ws.onclose = function(evt) {
         that.times++;
         that.term.writeln('链接已断开');
-        that.term.writeln('5s后尝试第'+ that.times +'次重连');
+        that.term.writeln('5秒后尝试第'+ that.times +'次重连');
         that.ws = null;
         // console.log(that.term.cols);
         if(that.times < 10){
