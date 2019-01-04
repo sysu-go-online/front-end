@@ -88,7 +88,7 @@ export default {
   background-color: #21252B;
 }
 .optionMenu .ivu-dropdown-item {
-  color: white;
+  color: #ADADAD;
 }
 .optionMenu .ivu-dropdown-item:hover {
   background-color: #2C313A;
